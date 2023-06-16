@@ -1,0 +1,6 @@
+[st-app]
+DATASOURCE = 'TODO'
+AUTHOR = 'by [DataBooth.com.au](https://www.databooth.com.au)'
+APP_TITLE = 'APP_TITLE'
+SUB_TITLE = 'SUB_TITLE'
+LAYOUT = 'wide'
