@@ -8,6 +8,7 @@ authors = [
 ]
 dependencies = [
     "pandas>=2.0.2",
+    "matplotlib>=3.7.1",
 ]
 requires-python = ">=3.9"
 license = {text = "MIT"}
@@ -15,4 +16,5 @@ license = {text = "MIT"}
 [tool.pdm.dev-dependencies]
 dev = [
     "notebook>=6.5.4",
+    "black[jupyter]>=23.3.0",
 ]
