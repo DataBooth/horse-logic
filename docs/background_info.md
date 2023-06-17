@@ -5,9 +5,9 @@ MB: Michael Booth
 
 ### What is the problem you are trying to solve?
 
-- Un-yet built device for horses 
-- Sensor data - measure latency between trials
-- Potentially use RasberryPI and/or PC/Matlab
+- Un-yet built device for capturing a specific horse behaviours
+- Sensor data - measure latency between trials and other metrics
+- Potentially use Raspberry Pi and/or PC/Matlab to interface with sensors
 - Need to start data collection in August
 - UK collaborators — understand hardware piece
 - Might go with touch screen solution (probably not)
@@ -30,9 +30,24 @@ MB: Michael Booth
 
 - CH: Investigate Matlab license fees (is it available under University license or additional charge)
 - CH: Send video to of manual experiment
-- MB: Look at how sensor data <--> RasberryPI / Python typically work together
+- MB: Look at how sensor data <--> Raspberry Pi / Python typically work together
 
+### Follow-up questions
 
-
-
+1. How long will each experiment last (duration) e.g. minutes, hours, days?
+2. Do you want to keep a record of each run (even if it "fails")?
+3. How frequently (typically) will each observation occur? How many sensors / components to each observation (same timestamp?)
+4. What are the details of the hardware interface (when available)?
+5. How many data points per second (per sensor) do you expect to collect? i.e. estimate of data size per experiment
+6. Where will the data be stored? (e.g. first local disk, then Cloud, etc.)
+7. Will the Raspberry Pi be connected to the internet?
+8. What storage will be available on the device? (e.g. SD card, SSD USB drive etc.)
+9. How will the data be transferred from the device to the storage location? (e.g. USB, network, etc.)
+10. Will WiFi be available at the site?
+11. Do you have a GitHub account? (or similar)
+12. Do you have a Google account? (for Google Colab and Drive)
+13. What type of sensor(s) will be used? Do they produce a digital or analog signals?
+14. What do you want to do with the data after it is collected? (e.g. analysis, visualisation, etc.)
+15. Is any data processing required before storage? (e.g. filtering, etc.)
+16. Any real-time processing required? (e.g. feedback to sensors, etc.)
 
