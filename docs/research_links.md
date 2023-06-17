@@ -4,6 +4,9 @@ https://halvorsen.blog/documents/technology/iot/pico/pico_datalogging.php
 
 ### Data Aquisition (DAQ)
 
+
+https://gpiozero.readthedocs.io/
+
 https://daqifi.com/raspberry-pi-data-acquisition/
 
 https://phypidaq.github.io
@@ -12,6 +15,7 @@ https://github.com/PhyPiDAQ/PhyPiDAQ/blob/main/docs/Documentation_en.md
 
 https://github.com/FilipDominec/rp2daq
 
+https://simulrpi.readthedocs.io/en/latest/index.html
 
 
 https://www.halvorsen.blog/documents/programming/python/resources/powerpoints/DAQ%20with%20Python.pdf

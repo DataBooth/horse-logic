@@ -35,7 +35,7 @@ MB: Michael Booth
 ### Follow-up questions
 
 1. How long will each experiment last (duration) e.g. minutes, hours, days?
-2. Do you want to keep a record of each run (even if it "fails")?
+2. Do you want to keep a record of each run (even if it "fails")? What about if power fails (e.g. have a partial record)?
 3. How frequently (typically) will each observation occur? How many sensors / components to each observation (same timestamp?)
 4. What are the details of the hardware interface (when available)?
 5. How many data points per second (per sensor) do you expect to collect? i.e. estimate of data size per experiment
@@ -50,4 +50,5 @@ MB: Michael Booth
 14. What do you want to do with the data after it is collected? (e.g. analysis, visualisation, etc.)
 15. Is any data processing required before storage? (e.g. filtering, etc.)
 16. Any real-time processing required? (e.g. feedback to sensors, etc.)
+17. How many horses are involved in the experiment? Is it a separate experiment for each horse?
 
