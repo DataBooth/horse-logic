@@ -25,3 +25,11 @@ A DAQ System consists of 4 parts:
 • DAQ device/hardware
 • Driver software
 • Your software application (Application Software) - in this case your Python application
+
+### General references
+
+https://opensource.com/article/21/3/sensor-data-raspberry-pi
+
+https://farmaker47.medium.com/collect-data-from-sensors-using-raspberry-pi-4-model-b-9cc9e82ef746
+
+https://www.circuitbasics.com/logging-sensor-data-to-the-cloud-using-the-raspberry-pi/
