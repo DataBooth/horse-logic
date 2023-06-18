@@ -10,6 +10,7 @@ dependencies = [
     "pandas>=2.0.2",
     "matplotlib>=3.7.1",
     "fastparquet>=2023.4.0",
+    "pandera>=0.14.5",
 ]
 requires-python = ">=3.9"
 license = {text = "MIT"}
