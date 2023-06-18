@@ -9,6 +9,7 @@ authors = [
 dependencies = [
     "pandas>=2.0.2",
     "matplotlib>=3.7.1",
+    "fastparquet>=2023.4.0",
 ]
 requires-python = ">=3.9"
 license = {text = "MIT"}
