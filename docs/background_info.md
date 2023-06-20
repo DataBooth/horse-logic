@@ -32,25 +32,7 @@ MB: Michael Booth
 - CH: Send video to of manual experiment
 - MB: Look at how sensor data <--> Raspberry Pi / Python typically work together
 
-### Follow-up questions
-
-1. How long will each experiment last (duration) e.g. minutes, hours, days?
-2. Do you want to keep a record of each run (even if it "fails")? What about if power fails (e.g. have a partial record)?
-3. How frequently (typically) will each observation occur? How many sensors / components to each observation (same timestamp?)
-4. What are the details of the hardware interface (when available)?
-5. How many data points per second (per sensor) do you expect to collect? i.e. estimate of data size per experiment
-6. Where will the data be stored? (e.g. first local disk, then Cloud, etc.)
-7. Will the Raspberry Pi be connected to the internet?
-8. What storage will be available on the device? (e.g. SD card, SSD USB drive etc.)
-9. How will the data be transferred from the device to the storage location? (e.g. USB, network, etc.)
-10. Will WiFi be available at the site?
-11. Do you have a GitHub account? (or similar)
-12. Do you have a Google account? (for Google Colab and Drive)
-13. What type of sensor(s) will be used? Do they produce a digital or analog signals?
-14. What do you want to do with the data after it is collected? (e.g. analysis, visualisation, etc.)
-15. Is any data processing required before storage? (e.g. filtering, etc.)
-16. Any real-time processing required? (e.g. feedback to sensors, etc.)
-17. How many horses are involved in the experiment? Is it a separate experiment for each horse?
+### Follow-up questions / answers
 
 1. How long will each experiment last (duration) e.g. minutes, hours, days?  
 
@@ -58,7 +40,7 @@ Each session will be about 10 minutes per horse, 20 horses, x 1 session a day, x
    
 2. Do you want to keep a record of each run (even if it "fails”)? What about if power fails (e.g. have a partial record)?  
 
-Hadn't thought about power failure- will think about that.  We will want to collect correct responses and the latency between the correct responses.  Am thinking we will need a "go" signal-probably a noise, then measure the time between that and a correct response.  Then a set period of time out, then go signal again and commencement of trial.  So recording the latency between go signal and beginning of time out period, or between go signals.
+Hadn't thought about power failure - will think about that.  We will want to collect correct responses and the latency between the correct responses.  Am thinking we will need a "go" signal-probably a noise, then measure the time between that and a correct response.  Then a set period of time out, then go signal again and commencement of trial.  So recording the latency between go signal and beginning of time out period, or between go signals.
 
 3. How frequently (typically) will each observation occur? How many sensors / components to each observation (same timestamp?).
     
@@ -68,7 +50,7 @@ Hadn't thought about power failure- will think about that.  We will want to coll
 
 5. How many data points per second (per sensor) do you expect to collect? i.e. estimate of data size per experiment. 
 
-Not sure.  I expect it will be that once the touch sensor is triggered, that will start a time out period where no further presses would be registered.  Then after the time period has elpased, the next touch would be registered and so on
+Not sure.  I expect it will be that once the touch sensor is triggered, that will start a time out period where no further presses would be registered.  Then after the time period has elapsed, the next touch would be registered and so on
 
 6. Where will the data be stored? (e.g. first local disk, then Cloud, etc.).   
 
@@ -96,11 +78,17 @@ Not sure - will check next week when I am in Wagga
 
 13. What type of sensor(s) will be used? Do they produce a digital or analog signals?  Not sure yet, will find out.
 
-14. What do you want to do with the data after it is collected? (e.g. analysis, visualisation, etc.). Both, graph it, analyse it probably in SPSS.  Will hope to use mixed model logistic regression in SPSS or perhaps in R with horse as random factor, session fixed factor/effect and latency or correct response as the dependant variable. 
+14. What do you want to do with the data after it is collected? (e.g. analysis, visualisation, etc.). 
 
-15. Is any data processing required before storage? (e.g. filtering, etc.) Not sure
+Both, graph it, analyse it probably in SPSS.  Will hope to use mixed model logistic regression in SPSS or perhaps in R with horse as random factor, session fixed factor/effect and latency or correct response as the dependant variable. 
+
+15. Is any data processing required before storage? (e.g. filtering, etc.) 
+
+Not sure
     
-16. Any real-time processing required? (e.g. feedback to sensors, etc.) Maybe
+16. Any real-time processing required? (e.g. feedback to sensors, etc.) 
+
+Maybe
     
 17. How many horses are involved in the experiment? Is it a separate experiment for each horse?
 
