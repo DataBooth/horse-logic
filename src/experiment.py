@@ -8,6 +8,7 @@ MAX_TIME_EXPERIMENT_SECONDS = 2 * 60.0
 class Experiment:
     name: str
     description: str
+    n_run: int
     start_date: str
     end_date: str
     status: str

@@ -33,3 +33,10 @@ https://opensource.com/article/21/3/sensor-data-raspberry-pi
 https://farmaker47.medium.com/collect-data-from-sensors-using-raspberry-pi-4-model-b-9cc9e82ef746
 
 https://www.circuitbasics.com/logging-sensor-data-to-the-cloud-using-the-raspberry-pi/
+
+
+### From Cath Henshall
+
+Potential hardware:
+
+https://www.youtube.com/watch?v=-wm05ODt2XA
