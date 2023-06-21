@@ -48,45 +48,59 @@ class Subject:
     description: str
     id: int
     age: float
+    breed: str
     type: str = "horse"
 
     def __str__(self):
-        return f"{self.name} ({self.id})"
+        return f"{self.name} (Id: {self.id})"
 
     def __repr__(self):
-        return f"{self.name} ({self.id})"
+        return f"{self.name} (Id: {self.id})"
+
+
 
 
 @dataclass
-class Trial:
+class Sensor:
     name: str
     description: str
-    start_datetime: str
-    end_datetime: str
-    status: str
-    run_id: str
-    sensor: list
-    max_time_trial_seconds: float = MAX_TIME_TRIAL_SECONDS
-    max_n_observation: int = MAX_N_OBSERVATION
+    status: bool
+    serial_number: str
+    hardware_daq_info: str  # details about the hardware DAQ e.g. Raspberry Pi
 
     def __str__(self):
-        return f"{self.name} ({self.uuid})"
+        return f"{self.name} ({self.serial_number})"
 
     def __repr__(self):
-        return f"{self.name} ({self.uuid})"
+        return f"{self.name} ({self.serial_number})"
 
 
-# TODO: May not need this class - Trial may be sufficient
+@dataclass
+class DaqHardware:
+    name: str
+    description: str
+    serial_number: str
+    sensor: list[Sensor]  # list of sensors connected to the DAQ hardware
+
+    def __str__(self):
+        return f"{self.name} ({self.serial_number})"
+
+    def __repr__(self):
+        return f"{self.name} ({self.serial_number})"
+
+
+# Experiment is the top level class consisting of a number of trials
+
 @dataclass
 class Experiment:
     name: str
     description: str
-    n_run: int
+    n_trial: int
     start_date: str
     end_date: str
     status: str
     uuid: str
-    sensors: list
+    daq_hardware: DaqHardware
     data_file_suffix: str
     # max_time_experiment_seconds: float = MAX_TIME_EXPERIMENT_SECONDS
     max_n_observation: int = MAX_N_OBSERVATION
@@ -98,20 +112,20 @@ class Experiment:
         return f"{self.name} ({self.uuid})"
 
 
-MAX_SENSOR_VALUE = 100.0
-
-
 @dataclass
-class Sensor:
+class Trial:
     name: str
     description: str
-    status: bool
-    serial_number: str
-    hardware_daq_info: str  # details about the hardware DAQ e.g. Raspberry Pi
-    max_sensor_value: float = MAX_SENSOR_VALUE
+    start_datetime: str
+    end_datetime: str
+    experiment: Experiment
+    run_id: str
+    subject: Subject
+    max_time_trial_seconds: float = MAX_TIME_TRIAL_SECONDS
+    max_n_observation: int = MAX_N_OBSERVATION
 
     def __str__(self):
-        return f"{self.name} ({self.serial_number})"
+        return f"{self.name} : Subject {self.subject})"
 
     def __repr__(self):
-        return f"{self.name} ({self.serial_number})"
+        return f"{self.name} : Subject {self.subject})"
