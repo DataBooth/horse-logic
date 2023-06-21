@@ -37,6 +37,7 @@
 
 
 from dataclasses import dataclass
+from pprint import pprint
 
 MAX_N_OBSERVATION = 30
 MAX_TIME_TRIAL_SECONDS = 2 * 60.0
@@ -80,13 +81,13 @@ class DaqHardware:
     name: str
     description: str
     serial_number: str
-    sensor: list[Sensor]  # list of sensors connected to the DAQ hardware
+    sensors: list  # list of sensors connected to the DAQ hardware
 
     def __str__(self):
-        return f"{self.name} ({self.serial_number})"
+        return f"{self.name} ({self.serial_number}) \nSensors:\n{self.sensors}"
 
     def __repr__(self):
-        return f"{self.name} ({self.serial_number})"
+        return f"{self.name} ({self.serial_number}) \nSensors:\n{self.sensors}"
 
 
 # Experiment is the top level class consisting of a number of trials
@@ -99,17 +100,17 @@ class Experiment:
     start_date: str
     end_date: str
     status: str
-    uuid: str
+    # uuid: str (just internally generated - not needed for now)
     daq_hardware: DaqHardware
-    data_file_suffix: str
-    # max_time_experiment_seconds: float = MAX_TIME_EXPERIMENT_SECONDS
+    data_file_prefix: str
+    # max_time_experiment_seconds: float = MAX_TIME_EXPERIMENT_SECONDS (to - probably MAX_TIME_TRIAL_SECONDS)
     max_n_observation: int = MAX_N_OBSERVATION
 
     def __str__(self):
-        return f"{self.name} ({self.uuid})"
+        return f"{self.name}"
 
     def __repr__(self):
-        return f"{self.name} ({self.uuid})"
+        return f"{self.name}"
 
 
 @dataclass
