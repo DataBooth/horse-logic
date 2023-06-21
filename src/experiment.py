@@ -99,7 +99,6 @@ class Experiment:
 
 
 MAX_SENSOR_VALUE = 100.0
-MAX_TIME_DIFF_SECONDS = 10.0
 
 
 @dataclass

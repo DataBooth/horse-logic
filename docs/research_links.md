@@ -35,6 +35,10 @@ https://farmaker47.medium.com/collect-data-from-sensors-using-raspberry-pi-4-mod
 https://www.circuitbasics.com/logging-sensor-data-to-the-cloud-using-the-raspberry-pi/
 
 
+ukechilds/dockerpi: A Virtualised Raspberry Pi inside a Docker image
+
+https://github.com/lukechilds/dockerpi
+
 ### From Cath Henshall
 
 Potential hardware:
