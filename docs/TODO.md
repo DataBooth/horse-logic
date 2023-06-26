@@ -1,0 +1,4 @@
+- Work out a plan for finishing prototype of experimental setup - allow for the 3 phases and standardised logging of each event/wait & recording of latency data for analysis 
+- Map out the analysis & confirm Cath (do analysis on simulated data)
+- Confirm date format for data logging
+- 

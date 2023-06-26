@@ -38,6 +38,11 @@
 
 from dataclasses import dataclass
 from pprint import pprint
+from datetime import datetime as dt
+from functools import cache
+import numpy as np
+import simpleaudio as sa
+
 
 MAX_N_OBSERVATION = 30
 MAX_TIME_TRIAL_SECONDS = 2 * 60.0
@@ -57,8 +62,6 @@ class Subject:
 
     def __repr__(self):
         return f"{self.name} (Id: {self.id})"
-
-
 
 
 @dataclass
@@ -91,6 +94,7 @@ class DaqHardware:
 
 
 # Experiment is the top level class consisting of a number of trials
+
 
 @dataclass
 class Experiment:
@@ -130,3 +134,89 @@ class Trial:
 
     def __repr__(self):
         return f"{self.name} : Subject {self.subject})"
+
+
+def log_event(
+    log_file,
+    event_name,
+    event_time=None,
+    trial_number=None,
+):
+    """Log the event name and time to a file."""
+    if event_time is None:
+        event_time = dt.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(log_file, "a") as f:
+        f.write(f"{event_time}: {event_name}\n")
+    print(f"Logged - {event_time}: {event_name}\n")
+    return None
+
+
+@cache
+def calculate_audio(duration, fs):
+    frequency = 880  # Our played note will be 440 Hz
+    seconds = duration  # Duration in seconds (must be integer)
+
+    # fs: samples per second
+    # Generate array with seconds*sample_rate steps, ranging between 0 and seconds
+    t = np.linspace(0, seconds, seconds * fs, False)
+
+    # Generate a 440 Hz sine wave
+    note = np.sin(frequency * t * 2 * np.pi)
+
+    # Ensure that highest value is in 16-bit range
+    audio = note * (2**15 - 1) / np.max(np.abs(note))
+    # Convert to 16-bit data
+    audio = audio.astype(np.int16)
+    return audio
+
+
+def play_beep(duration=1, fs=44100):
+    """Play a beep sound for the specified duration in seconds."""
+    audio = calculate_audio(duration, fs)
+
+    # Start playback
+    play_obj = sa.play_buffer(audio, 1, 2, fs)
+
+    # Wait for playback to finish before exiting
+    play_obj.wait_done()
+
+
+def play_correct_response_tone():
+    """Play the correct response tone."""
+    log_event("Start playing correct response tone", dt.now())
+    play_beep(duration=1)
+    log_event("Finished playing correct response tone", dt.now())
+    return None
+
+
+def dispense_feed():
+    """Dispense feed."""
+    log_event("Dispensing feed", dt.now())
+    # code to dispense feed
+    return None
+
+
+def wait_for_period_of_time(event_name, duration_sec):
+    """Wait for the specified duration in seconds."""
+    log_event(f"{event_name}: Waiting for {duration_sec} seconds", dt.now())
+    sleep(duration_sec)
+    log_event(f"{event_name}: Finished waiting for {duration_sec} seconds", dt.now())
+    return None
+
+
+def wait_for_start_button_press():
+    while True:
+        if input("Press [ENTER] to start the trial") == "":
+            log_event("Trial ready to start", dt.now())
+            break
+    return None
+
+
+def log_trial_parameters(trial_parameters_names, log_file):
+    trial_parameters = {key: eval(key) for key in trial_parameters_names}
+
+    """Log the trial parameters to a file."""
+    with open(log_file, "a") as f:
+        f.write(f"TRIAL PARAMETERS: {trial_parameters}\n")
+    print(f"Logged - TRIAL PARAMETERS: {trial_parameters}\n")
+    return None
