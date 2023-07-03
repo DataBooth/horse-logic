@@ -1,0 +1,24 @@
+
+Subject #1
+
+Trial #1 -------------------------------------------- [Scenario A: Touch event within allowed time]
+
+Starting data collection at 2023-06-18 18:26:54.022810 for 1 initial observation (touch) or time out of xx seconds
+
+  1: 2023-06-18 18:26:59.000000; Buzzer start sound starts (for 1 second)
+  2: 2023-06-18 18:27:00.000000; Buzzer start sound ends
+  3: 2023-06-18 18:27:06.340000; Touched: Elapsed time: 6.34 seconds
+
+What else to record? 
+The time the "good" sound is played?
+(just confirm the time the motor starts/ends?)
+
+
+
+Subject #2
+
+Trial #1
+
+
+
+Trial #2 -------------------------------------------- [Scenario B: No touch event within allowed time]

@@ -9,11 +9,9 @@ Measurement
 
 Acquisition
 
-Horse enters test chute - Q. How can you tell when the "horse is ready"? (this seems to be a variable length process)
+Horse enters test chute - Q. How can you tell when the "horse is ready / settled"? (this seems to be a variable length process)
 
-Start tone sounds (is this "zero" time at the start of the sound? Or is there recording that happens before this?)
-
-1 sec dur
+Start tone sounds (is this "zero" time at the start of the sound? Or is there recording that happens before this?) - 1 sec duration
 
 Latency between start tone and first touch sensor activation
 
@@ -21,19 +19,15 @@ Horse touches panel with nose activating touch sensor
 
 Only the first touch is registered, further touches not registered until next trial
 
-Correct response tone sounds
+Correct response tone sounds 0.5 sec duration (triggered by touch event?)
 
-0.5 sec dur
+Wait period 2-3 sec (after end of sound?)
 
-Wait period
-
-2-3 sec
-
-Servo motor engages, dispenses feed via chute to receptacle
+Servo motor engages, dispenses feed via chute to receptacle (Q. could the feed get stuck? If so?)
 
 50gms feed dispensed
 
-Horse consumes
+Horse consumes (will horse necessarily consume on demand? Does it matter if food is consumed?)
 
 10-20 sec
 
