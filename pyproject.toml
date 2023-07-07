@@ -20,4 +20,5 @@ license = {text = "MIT"}
 dev = [
     "notebook>=6.5.4",
     "black[jupyter]>=23.3.0",
+    "pre-commit>=3.3.3",
 ]

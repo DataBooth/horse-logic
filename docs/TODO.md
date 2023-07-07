@@ -2,3 +2,5 @@
 - Map out the analysis & confirm Cath (do analysis on simulated data)
 - Confirm date format for data logging
 - Remote access option a good one to check in real time that once your code is added re the data logging etc e.g. TeamViewer https://www.teamviewer.com/en/solutions/remote-desktop/raspberry-pi/
+- VNC option? Setting up a [VNC screen share on a Raspberry Pi and a Mac](https://medium.com/@thedyslexiccoder/setting-up-a-vnc-screen-share-on-a-raspberry-pi-and-a-mac-10c1635df5dc)
+- See also videos on Signal
