@@ -11,7 +11,7 @@ os.system("sudo pigpiod")
 
 # Initialise the sensors
 buzz = PiicoDev_Buzzer()
-touchSensor = PiicoDev_CAP1203(touchmode='single', sensitivity=3)
+touchSensor = PiicoDev_CAP1203(touchmode="single", sensitivity=3)
 
 # Variables
 touch_count = 0
@@ -32,36 +32,51 @@ servo = pi.set_servo_pulsewidth(servo_pin, 0)
 
 # Main loop
 try:
-    while touch_count <5:
+    while touch_count < 5:
         # Play start tone
         buzz.tone(1000, 2000)  # Start the start tone
         time.sleep(2)  # Delay for 2 seconds
         buzz.noTone()  # Stop the start tone
 
         while True:
-          # Check if sensor is touched
+            # Check if sensor is touched
             if is_touch_active:
                 status = touchSensor.read()
-                print("Touch Pad Status: " + str(status[1]) + "  " + str(status[2]) + "  " + str(status[3]))
+                print(
+                    "Touch Pad Status: "
+                    + str(status[1])
+                    + "  "
+                    + str(status[2])
+                    + "  "
+                    + str(status[3])
+                )
                 sleep_ms(100)
 
                 if status[1] > 0 or status[2] > 0 or status[3] > 0:
                     # Make the buzzer sound for a maximum of 2 seconds
                     buzz.tone(800, 2000)  # Start the buzzer tone
-                    time.sleep(3) # Delay for 3 seconds
+                    time.sleep(3)  # Delay for 3 seconds
 
                     # Control the servo motor
-                    pi.set_servo_pulsewidth(servo_pin, servo_max)  # Move servo to 90 degree position
+                    pi.set_servo_pulsewidth(
+                        servo_pin, servo_max
+                    )  # Move servo to 90 degree position
                     time.sleep(1)  # Delay for 1 second for operation of servo
-                    pi.set_servo_pulsewidth(servo_pin, servo_min)  # Move servo position back to start
+                    pi.set_servo_pulsewidth(
+                        servo_pin, servo_min
+                    )  # Move servo position back to start
 
                     start_time = time.time()
-                    sleep_ms(5000) # delay for dispense and consumption of feed- adjust after prootyping with horses
+                    sleep_ms(
+                        5000
+                    )  # delay for dispense and consumption of feed- adjust after prootyping with horses
 
                     touch_count += 1
                     last_touch_time = time.time()
 
-                    if touch_count == 5:  # Change this number as required for the number of trials
+                    if (
+                        touch_count == 5
+                    ):  # Change this number as required for the number of trials
                         # Make a different sound after 5 registered touches
                         buzz.tone(1200, 500)  # Start the different buzzer tone
                         time.sleep(0.5)
