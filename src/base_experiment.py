@@ -1,10 +1,38 @@
-import time
-import pigpio
-from PiicoDev_CAP1203 import PiicoDev_CAP1203
-from PiicoDev_Buzzer import PiicoDev_Buzzer
-from PiicoDev_Unified import sleep_ms
-import sys
+# Key package information for hardware components
+
+## pigpio - PI General Purpose Input Outputs (GPIO)
+
+# https://github.com/joan2937/pigpio
+# http://abyz.me.uk/rpi/pigpio/python.html
+# http://abyz.me.uk/rpi/pigpio/examples.html#Python%20code
+
+## PiicoDev® Capacitive Touch Sensor CAP1203
+
+# https://github.com/CoreElectronics/CE-PiicoDev-Capacitive-Touch-Sensor-CAP1203
+# https://core-electronics.com.au/guides/piicodev-capacitive-touch-sensor-cap1203-raspberry-pi-guide/
+# https://raw.githubusercontent.com/CoreElectronics/CE-PiicoDev-CAP1203-MicroPython-Module/main/PiicoDev_CAP1203.py
+
+## PiicoDev® Buzzer
+
+# https://core-electronics.com.au/piicodev-buzzer-module.html
+# https://github.com/CoreElectronics/CE-PiicoDev-Buzzer-MicroPython-Module
+
+## PiicoDev® Unified library
+
+# https://github.com/CoreElectronics/CE-PiicoDev-Unified
+# https://github.com/CoreElectronics/CE-PiicoDev-PyPI
+
+
+# ---------------------------------------------------------------------------- #
+
 import os
+import sys
+import time
+
+import pigpio
+from PiicoDev_Buzzer import PiicoDev_Buzzer
+from PiicoDev_CAP1203 import PiicoDev_CAP1203
+from PiicoDev_Unified import sleep_ms
 
 # Start the pigpio daemon
 os.system("sudo pigpiod")
@@ -69,7 +97,7 @@ try:
                     start_time = time.time()
                     sleep_ms(
                         5000
-                    )  # delay for dispense and consumption of feed- adjust after prootyping with horses
+                    )  # delay for dispense and consumption of feed- adjust after prototyping with horses
 
                     touch_count += 1
                     last_touch_time = time.time()
