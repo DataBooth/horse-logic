@@ -47,7 +47,7 @@
 
 # - Event 1: Start tone PEIZO BUZZER tone 1 - (1 sec duration)
 # - Event 2: Activation of PIICODEV CAPACITIVE TOUCH SENSOR (nose press on panel)
-# - Event 3: Correct response tone PEIZO BUZZER tone 2 (different from start tone-0.5 sec duration
+# - Event 3: Correct response tone PEIZO BUZZER tone 2 (different from start tone) - 0.5 sec duration
 # - Event 4: Wait period-2-3 sec
 # - Event 5: Activation of DF GEARED 15KG STANDARD SERVO 270°-dispense feed (50gm per trial)
 # - Event 6: Time out (set period 10-15s for feed consumption)
