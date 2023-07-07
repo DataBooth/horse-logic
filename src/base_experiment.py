@@ -34,18 +34,20 @@ from PiicoDev_Buzzer import PiicoDev_Buzzer
 from PiicoDev_CAP1203 import PiicoDev_CAP1203
 from PiicoDev_Unified import sleep_ms
 
-# Start the pigpio daemon
-os.system("sudo pigpiod")
 
 # Define key hardware parameters
+START_CMD_PI_GPIO_PROCESS = "sudo pigpiod"
 TOUCH_SENSITIVITY_LEVEL = 3
 SERVO_PIN = 18  # GPIO pin for the servo
 SERVO_MIN = 500  # Minimum pulse width for the servo
 SERVO_MAX = 2500  # Maximum pulse width for the servo
 
 # Define experiment parameters
-
 N_TRIAL = 5  # Change this number as required for the number of trials
+
+# Start the pigpio daemon
+os.system(START_CMD_PI_GPIO_PROCESS)
+# TODO: Does this work without specifying an admin password?
 
 # Initialise the sensors
 buzzer = PiicoDev_Buzzer()
@@ -77,7 +79,7 @@ try:
             if is_touch_active:
                 status = touchSensor.read()
                 print(f"Touch Pad Status: {str(status[1])}  {str(status[2])}  {str(status[3])}")
-                #TODO: What is in status[0]?
+                # TODO: What is in status[0]?
                 sleep_ms(100)
 
                 if status[1] > 0 or status[2] > 0 or status[3] > 0:
@@ -114,4 +116,4 @@ except KeyboardInterrupt:
     rpi.stop()  # Release the servo motor control  #TODO: Check that this is intended and not servo variable?
 
 
-#TODO: Maybe you want to stop the pigpiod process at the end of each experiment? (security-wise)
+# TODO: Maybe you want to stop the pigpiod process at the end of each experiment? (security-wise)
