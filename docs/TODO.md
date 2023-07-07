@@ -1,4 +1,4 @@
-- Work out a plan for finishing prototype of experimental setup - allow for the 3 phases and standardised logging of each event/wait & recording of latency data for analysis 
+- Work out a plan for finishing prototype of experimental setup - allow for the 3 phases and standardised logging of each event/wait & recording of latency data for analysis
 - Map out the analysis & confirm Cath (do analysis on simulated data)
 - Confirm date format for data logging
-- 
+- Remote access option a good one to check in real time that once your code is added re the data logging etc e.g. TeamViewer https://www.teamviewer.com/en/solutions/remote-desktop/raspberry-pi/
