@@ -48,7 +48,7 @@ SERVO_MAX = 2500  # Maximum pulse width for the servo
 N_TRIAL = 5  # Change this number as required for the number of trials
 
 # Initialise the sensors
-buzz = PiicoDev_Buzzer()
+buzzer = PiicoDev_Buzzer()
 touchSensor = PiicoDev_CAP1203(touchmode="single", sensitivity=TOUCH_SENSITIVITY_LEVEL)
 
 # Initialise touch sensor variables
@@ -68,20 +68,21 @@ servo = rpi.set_servo_pulsewidth(SERVO_PIN, 0)
 try:
     while touch_count < N_TRIAL:
         # Play start tone
-        buzz.tone(1000, 2000)  # Start the start tone
+        buzzer.tone(1000, 2000)  # Start the start tone
         time.sleep(2)  # Delay for 2 seconds
-        buzz.noTone()  # Stop the start tone
+        buzzer.noTone()  # Stop the start tone
 
         while True:
             # Check if sensor is touched
             if is_touch_active:
                 status = touchSensor.read()
                 print(f"Touch Pad Status: {str(status[1])}  {str(status[2])}  {str(status[3])}")
+                #TODO: What is in status[0]?
                 sleep_ms(100)
 
                 if status[1] > 0 or status[2] > 0 or status[3] > 0:
                     # Make the buzzer sound for a maximum of 2 seconds
-                    buzz.tone(800, 2000)  # Start the buzzer tone
+                    buzzer.tone(800, 2000)  # Start the buzzer tone
                     time.sleep(3)  # Delay for 3 seconds
 
                     # Control the servo motor
@@ -97,9 +98,9 @@ try:
 
                     if touch_count == N_TRIAL:
                         # Make a different sound after N_TRIAL registered touches
-                        buzz.tone(1200, 500)  # Start the different buzzer tone
+                        buzzer.tone(1200, 500)  # Start the different buzzer tone
                         time.sleep(0.5)
-                        buzz.noTone()  # Stop the different buzzer tone
+                        buzzer.noTone()  # Stop the different buzzer tone
                         touch_count = 0  # Reset touch count after the session ends
 
                         # Terminate the script
@@ -108,6 +109,9 @@ try:
                     break
 
 except KeyboardInterrupt:
-    buzz.noTone()  # Stop the buzzer if program is interrupted
+    buzzer.noTone()  # Stop the buzzer if program is interrupted
     rpi.set_servo_pulsewidth(SERVO_PIN, 0)  # Move the servo to the stop position
-    rpi.stop()  # Release the servo motor control
+    rpi.stop()  # Release the servo motor control  #TODO: Check that this is intended and not servo variable?
+
+
+#TODO: Maybe you want to stop the pigpiod process at the end of each experiment? (security-wise)
