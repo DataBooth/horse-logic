@@ -729,6 +729,19 @@ version = "0.7.5"
 summary = "Tiny 'shelve'-like database with concurrency support"
 
 [[package]]
+name = "pigpio"
+version = "1.78"
+summary = "Raspberry Pi GPIO module"
+
+[[package]]
+name = "piicodev"
+version = "1.10.0"
+summary = "Drivers for the PiicoDev ecosystem of sensors and modules"
+dependencies = [
+    "smbus2>=0.4.1",
+]
+
+[[package]]
 name = "pillow"
 version = "9.5.0"
 requires_python = ">=3.7"
@@ -902,6 +915,11 @@ requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 summary = "Python 2 and 3 compatibility utilities"
 
 [[package]]
+name = "smbus2"
+version = "0.4.2"
+summary = "smbus2 is a drop-in replacement for smbus-cffi/smbus-python in pure Python"
+
+[[package]]
 name = "sniffio"
 version = "1.3.0"
 requires_python = ">=3.7"
@@ -1042,8 +1060,8 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 [metadata]
 lock_version = "4.2"
 cross_platform = true
-groups = ["default", "dev"]
-content_hash = "sha256:93f46670c257bbf3be53a8fe02ba98448e3448c2b0a0862a0827fb80ec8b1d1f"
+groups = ["default", "dev", "hardware"]
+content_hash = "sha256:e2c45c1fbe8427ef1c43e03a970463816f394fe4cfc8221d1ccdf56968e2e1bf"
 
 [metadata.files]
 "anyio 3.7.0" = [
@@ -1825,6 +1843,14 @@ content_hash = "sha256:93f46670c257bbf3be53a8fe02ba98448e3448c2b0a0862a0827fb80e
     {url = "https://files.pythonhosted.org/packages/9a/41/220f49aaea88bc6fa6cba8d05ecf24676326156c23b991e80b3f2fc24c77/pickleshare-0.7.5-py2.py3-none-any.whl", hash = "sha256:9649af414d74d4df115d5d718f82acb59c9d418196b7b4290ed47a12ce62df56"},
     {url = "https://files.pythonhosted.org/packages/d8/b6/df3c1c9b616e9c0edbc4fbab6ddd09df9535849c64ba51fcb6531c32d4d8/pickleshare-0.7.5.tar.gz", hash = "sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca"},
 ]
+"pigpio 1.78" = [
+    {url = "https://files.pythonhosted.org/packages/82/a0/991ac7f96f83936c15f4b26b51d1fdba63e7bc9866411bfda022b649c2a7/pigpio-1.78-py2.py3-none-any.whl", hash = "sha256:81e46f640c4e6342881fa9bbe290dbcd4fc179619dc6591e57a9d4a084dc49fa"},
+    {url = "https://files.pythonhosted.org/packages/a9/4a/3ebdfd90906553fb5420e80a475eb52f0809f2a29b547ba3b260db0cbc8f/pigpio-1.78.tar.gz", hash = "sha256:91efa50e4990649da97408a384782d6ccf58342fc59cdfe21ed7a42911569975"},
+]
+"piicodev 1.10.0" = [
+    {url = "https://files.pythonhosted.org/packages/05/ed/c0130f9defa0512a092e7a83a15b2802edb08b539f2d1ec9950283ffdb9e/piicodev-1.10.0-py3-none-any.whl", hash = "sha256:6a4f04563eb913cbced1356e85d40d18073cad4d28f3166fad9bbdfc63593062"},
+    {url = "https://files.pythonhosted.org/packages/7a/1d/940682003f41bccf8d4873965b1cae919a96272cf9b07fa3d7b9831c6db4/piicodev-1.10.0.tar.gz", hash = "sha256:2d778f93a5946adf29821385708598557917cf778e3da53277c685a3baca79fa"},
+]
 "pillow 9.5.0" = [
     {url = "https://files.pythonhosted.org/packages/00/d5/4903f310765e0ff2b8e91ffe55031ac6af77d982f0156061e20a4d1a8b2d/Pillow-9.5.0.tar.gz", hash = "sha256:bf548479d336726d7a0eceb6e767e179fbde37833ae42794602631a070d630f1"},
     {url = "https://files.pythonhosted.org/packages/02/4a/d362f7f44f1e5801c6726f0eaaeaf869d0d43c554b717072b2c5540cefb4/Pillow-9.5.0-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:1e7723bd90ef94eda669a3c2c19d549874dd5badaeefabefd26053304abe5799"},
@@ -2197,6 +2223,10 @@ content_hash = "sha256:93f46670c257bbf3be53a8fe02ba98448e3448c2b0a0862a0827fb80e
 "six 1.16.0" = [
     {url = "https://files.pythonhosted.org/packages/71/39/171f1c67cd00715f190ba0b100d606d440a28c93c7714febeca8b79af85e/six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
     {url = "https://files.pythonhosted.org/packages/d9/5a/e7c31adbe875f2abbb91bd84cf2dc52d792b5a01506781dbcf25c91daf11/six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
+]
+"smbus2 0.4.2" = [
+    {url = "https://files.pythonhosted.org/packages/71/2f/73aad66cdee8d4b94068bbc80164aa6a24b3f83541de7b04974438fd70e6/smbus2-0.4.2-py2.py3-none-any.whl", hash = "sha256:50f3c78e436b42a9583948be06961a8104cf020ebad5edfaaf2657528bef0818"},
+    {url = "https://files.pythonhosted.org/packages/7c/01/18a9c3fccc2ddc0af16ddbe52aadc4585fbd1e7ae4ee32e780abbfc7fc97/smbus2-0.4.2.tar.gz", hash = "sha256:634541ed794068a822fe7499f1577468b9d4641b68dd9bfb6d0eb7270f4d2a32"},
 ]
 "sniffio 1.3.0" = [
     {url = "https://files.pythonhosted.org/packages/c3/a0/5dba8ed157b0136607c7f2151db695885606968d1fae123dc3391e0cfdbf/sniffio-1.3.0-py3-none-any.whl", hash = "sha256:eecefdce1e5bbfb7ad2eeaabf7c1eeb404d7757c379bd1f7e5cce9d8bf425384"},

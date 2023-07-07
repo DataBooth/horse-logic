@@ -22,3 +22,7 @@ dev = [
     "black[jupyter]>=23.3.0",
     "pre-commit>=3.3.3",
 ]
+hardware = [
+    "pigpio>=1.78",
+    "piicodev>=1.10.0",
+]
