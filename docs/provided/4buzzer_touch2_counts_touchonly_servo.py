@@ -42,14 +42,7 @@ try:
             # Check if sensor is touched
             if is_touch_active:
                 status = touchSensor.read()
-                print(
-                    "Touch Pad Status: "
-                    + str(status[1])
-                    + "  "
-                    + str(status[2])
-                    + "  "
-                    + str(status[3])
-                )
+                print("Touch Pad Status: " + str(status[1]) + "  " + str(status[2]) + "  " + str(status[3]))
                 sleep_ms(100)
 
                 if status[1] > 0 or status[2] > 0 or status[3] > 0:
@@ -58,25 +51,17 @@ try:
                     time.sleep(3)  # Delay for 3 seconds
 
                     # Control the servo motor
-                    pi.set_servo_pulsewidth(
-                        servo_pin, servo_max
-                    )  # Move servo to 90 degree position
+                    pi.set_servo_pulsewidth(servo_pin, servo_max)  # Move servo to 90 degree position
                     time.sleep(1)  # Delay for 1 second for operation of servo
-                    pi.set_servo_pulsewidth(
-                        servo_pin, servo_min
-                    )  # Move servo position back to start
+                    pi.set_servo_pulsewidth(servo_pin, servo_min)  # Move servo position back to start
 
                     start_time = time.time()
-                    sleep_ms(
-                        5000
-                    )  # delay for dispense and consumption of feed- adjust after prootyping with horses
+                    sleep_ms(5000)  # delay for dispense and consumption of feed- adjust after prootyping with horses
 
                     touch_count += 1
                     last_touch_time = time.time()
 
-                    if (
-                        touch_count == 5
-                    ):  # Change this number as required for the number of trials
+                    if touch_count == 5:  # Change this number as required for the number of trials
                         # Make a different sound after 5 registered touches
                         buzz.tone(1200, 500)  # Start the different buzzer tone
                         time.sleep(0.5)
