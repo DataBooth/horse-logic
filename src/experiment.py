@@ -42,6 +42,7 @@ from datetime import datetime as dt
 from functools import cache
 import numpy as np
 import simpleaudio as sa
+from pathlib import Path
 
 
 MAX_N_OBSERVATION = 30
@@ -137,15 +138,15 @@ class Trial:
 
 
 def log_event(
+    data_dir,
     log_file,
     event_name,
     event_time=None,
-    trial_number=None,
 ):
     """Log the event name and time to a file."""
     if event_time is None:
         event_time = dt.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(log_file, "a") as f:
+    with open(Path(data_dir)/log_file, "a") as f:
         f.write(f"{event_time}: {event_name}\n")
     print(f"Logged - {event_time}: {event_name}\n")
     return None
