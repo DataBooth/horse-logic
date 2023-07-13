@@ -37,7 +37,7 @@ from PiicoDev_Unified import sleep_ms
 
 # Define key hardware parameters
 START_CMD_PI_GPIO_PROCESS = "sudo pigpiod"
-TOUCH_SENSITIVITY_LEVEL = 3
+TOUCH_SENSITIVITY_LEVEL = 6
 SERVO_PIN = 18  # GPIO pin for the servo
 SERVO_MIN = 500  # Minimum pulse width for the servo
 SERVO_MAX = 2500  # Maximum pulse width for the servo
