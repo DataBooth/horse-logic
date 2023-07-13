@@ -43,6 +43,14 @@ from functools import cache
 import numpy as np
 import simpleaudio as sa
 from pathlib import Path
+import os
+
+
+# Define key hardware parameters
+TOUCH_SENSITIVITY_LEVEL = 6
+SERVO_PIN = 18  # GPIO pin for the servo
+SERVO_MIN = 500  # Minimum pulse width for the servo
+SERVO_MAX = 2500  # Maximum pulse width for the servo
 
 
 MAX_N_OBSERVATION = 30
@@ -142,13 +150,15 @@ def log_event(
     log_file,
     event_name,
     event_time=None,
+    echo_to_console=True,
 ):
     """Log the event name and time to a file."""
     if event_time is None:
         event_time = dt.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(Path(data_dir)/log_file, "a") as f:
+    with open(Path(data_dir) / log_file, "a") as f:
         f.write(f"{event_time}: {event_name}\n")
-    print(f"Logged - {event_time}: {event_name}\n")
+    if echo_to_console:
+        print(f"Logged - {event_time}: {event_name}\n")
     return None
 
 
@@ -171,7 +181,7 @@ def calculate_audio(duration, fs):
     return audio
 
 
-def play_beep(duration=1, fs=44100):
+def simulate_beep(duration=1, fs=44100):
     """Play a beep sound for the specified duration in seconds."""
     audio = calculate_audio(duration, fs)
 
@@ -221,3 +231,41 @@ def log_trial_parameters(trial_parameters_names, log_file):
         f.write(f"TRIAL PARAMETERS: {trial_parameters}\n")
     print(f"Logged - TRIAL PARAMETERS: {trial_parameters}\n")
     return None
+
+
+def create_logfile_name(subject_number):
+    LOGFILE_PREFIX = "Experiment"
+    return f"{LOGFILE_PREFIX}_{dt.now().isoformat()}_Subject_{subject_number}.log"
+
+
+def initialise_experiment():
+    # Start the pigpio daemon
+    START_CMD_PI_GPIO_PROCESS = "sudo pigpiod"
+    os.system(START_CMD_PI_GPIO_PROCESS)
+    # TODO: Does this work without specifying an admin password?
+
+    # Initialise the sensors
+    buzzer = PiicoDev_Buzzer()
+    touch_sensor = PiicoDev_CAP1203(touchmode="single", sensitivity=TOUCH_SENSITIVITY_LEVEL)
+
+    # Initialise touch sensor variables
+    touch_count = 0
+    last_touch_time = time.time()
+    is_touch_active = True
+
+    # Connect to the local Raspberry Pi GPIO
+    rpi = pigpio.pi()
+
+    # create a servo object
+    servo = rpi.set_servo_pulsewidth(SERVO_PIN, 0)
+    # TODO: Note that the servo variable is not used subsequently
+
+    return (
+        rpi,
+        buzzer,
+        touch_sensor,
+        touch_count,
+        last_touch_time,
+        is_touch_active,
+        servo,
+    )

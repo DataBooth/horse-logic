@@ -25,14 +25,23 @@
 
 # ---------------------------------------------------------------------------- #
 
+# TODO: Seems to me that this script should be run for each subject for a chosen number of trials
+#       (and this would represent an experiment i.e. one experiment per subject)
+#       Consequently as the start of running this script one would confirm the subject #
+#       and the parameters for the experiment (e.g. #trial; other potentially varying parameters above)
+#       and that all of this info, plus the logging of events from the each experiment / each trial
+#       should in a filename like experiment_start_datetime_subject_number.log
+#       Any measurements / data can be easily extracted by processing these files (individually or in aggregate)
+
+
 import os
 import sys
 import time
 from pathlib import Path
 from datetime import datetime as dt
-from experiment import log_event
+from experiment import log_event, create_logfile_name, initialise_experiment, simulate_beep
 
-RUNNING_ON_RASPBERRY_PI = False    # Set to True for actual experiments on Raspberry Pi
+RUNNING_ON_RASPBERRY_PI = "arm" not in os.uname().machine
 
 if RUNNING_ON_RASPBERRY_PI:
     import pigpio
@@ -42,85 +51,68 @@ if RUNNING_ON_RASPBERRY_PI:
 else:
     print("\nWARNING: Not running on Raspberry Pi - using simulated approach")
 
-# TODO: Seems to me that this script should be run for each subject for a chosen number of trials
-#       (and this would represent an experiment i.e. one experiment per subject)
-#       Consequently as the start of running this script one would confirm the subject #
-#       and the parameters for the experiment (e.g. #trial; other potentially varying parameters above)
-#       and that all of this info, plus the logging of events from the each experiment / each trial
-#       should in a filename like experiment_start_datetime_subject_number.log
-#       Any measurements / data can be easily extracted by processing these files (individually or in aggregate)
-
-# Define key hardware parameters
-TOUCH_SENSITIVITY_LEVEL = 6
-SERVO_PIN = 18  # GPIO pin for the servo
-SERVO_MIN = 500  # Minimum pulse width for the servo
-SERVO_MAX = 2500  # Maximum pulse width for the servo
 
 # Define experiment parameters
 N_TRIAL = 5  # Change this number as required for the number of trials
-N_SUBJECT = 20 # The total number of subjects in the experiments
+N_SUBJECT = 20  # The total number of subjects in the experiments
 
 # Data directory
-DATA_DIR = Path.cwd() / "data"    # TODO: This may need tweak for Raspberry Pi
+DATA_DIR = Path.cwd() / "data"  # TODO: This may need tweak for Raspberry Pi
 if not DATA_DIR.exists():
     print(f"\nERROR: Data directory does not exist - {DATA_DIR.as_posix()}")
     exit()
 
-def create_logfile_name(subject_number):
-    LOGFILE_PREFIX = "Experiment"
-    return f"{LOGFILE_PREFIX}_{dt.now().isoformat()}_Subject_{subject_number}.log"
 
-
-def initialise_experiment():
-    # Start the pigpio daemon
-    START_CMD_PI_GPIO_PROCESS = "sudo pigpiod"
-    os.system(START_CMD_PI_GPIO_PROCESS)
-    # TODO: Does this work without specifying an admin password?
-
-    # Initialise the sensors
-    buzzer = PiicoDev_Buzzer()
-    touch_sensor = PiicoDev_CAP1203(touchmode="single", sensitivity=TOUCH_SENSITIVITY_LEVEL)
-
-    # Initialise touch sensor variables
-    touch_count = 0
-    last_touch_time = time.time()
-    is_touch_active = True
-
-    # Connect to the local Raspberry Pi GPIO
-    rpi = pigpio.pi()
-
-    # create a servo object
-    servo = rpi.set_servo_pulsewidth(SERVO_PIN, 0)
-    # TODO: Note that the servo variable is not used subsequently
-
-    return rpi, buzzer, touch_sensor, touch_count, last_touch_time, is_touch_active, servo
-
+# Initialise the hardware components
 if RUNNING_ON_RASPBERRY_PI:
-    rpi, buzzer, touch_sensor, touch_count, last_touch_time, is_touch_active, servo = initialise_experiment()
-
+    (
+        rpi,
+        buzzer,
+        touch_sensor,
+        touch_count,
+        last_touch_time,
+        is_touch_active,
+        servo,
+    ) = initialise_experiment()
 
 
 # Main loop
 
 subject_number = 0
+touch_count = 0
 
+# Q. Does touch_count == i_trial?
+
+# Is the try/except block necessary? Purpose?
 try:
     print("\nStarting experiment:")
+    print("\n  Press Ctrl-C to exit the experiment\n")
     print("  Ensure the subject is settled in the stall")
     print(f"  Enter subject # (between 1 and {N_SUBJECT}) to commence the experiment with {N_TRIAL} trials...")
-    # code for inputting and validating subject number is within a certain numeric range
+
     while subject_number < 1 or subject_number > N_SUBJECT:
-            subject_number = int(input("\nEnter subject #: "))
+        subject_number = int(input("\nEnter subject #: "))
+
     logfile_name = create_logfile_name(subject_number)
-    print(f"\nExperiment started for subject #{subject_number} - logging to {logfile_name}")
-    print("  Press Ctrl-C to exit the experiment\n")
-    log_event(DATA_DIR, logfile_name, "Experiment started")
+
+    log_event(DATA_DIR, logfile_name, f"Experiment started for subject #{subject_number}\n", echo_to_console=False)
+
+    print("\n----------------------------------------------------------------------------------------------------------")
+    print(f"Experiment started for subject #{subject_number} - logging to:\n\n{DATA_DIR.as_posix()}/{logfile_name}\n")
+    print("----------------------------------------------------------------------------------------------------------\n")
 
     while touch_count < N_TRIAL:
-        # Play start tone
-        buzzer.tone(1000, 2000)  # Start the start tone
-        time.sleep(2)  # Delay for 2 seconds
-        buzzer.noTone()  # Stop the start tone
+        log_event(DATA_DIR, logfile_name, f"Trial {touch_count + 1} started")
+
+        log_event(DATA_DIR, logfile_name, "Playing start tone")
+
+        if RUNNING_ON_RASPBERRY_PI:
+            # Play start tone
+            buzzer.tone(1000, 2000)  # Start the start tone
+            time.sleep(2)  # Delay for 2 seconds
+            buzzer.noTone()  # Stop the start tone
+        else:
+            simulate_beep(2)
 
         while True:
             # Check if sensor is touched
