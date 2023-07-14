@@ -74,6 +74,10 @@ if RUNNING_ON_RASPBERRY_PI:
         is_touch_active,
         servo,
     ) = initialise_experiment()
+else:
+    touch_count = 0
+    last_touch_time = None
+    is_touch_active = True
 
 
 # Main loop
@@ -95,9 +99,6 @@ try:
             subject_number = int(input(f"\nEnter subject # (between 1 and {N_SUBJECT}): "))
         except ValueError:
             subject_number = 0
-
-    # code to check if subject_number is an integer and between 1 and N_SUBJECT if not ask again
-
 
     logfile_name = create_logfile_name(subject_number)
 
