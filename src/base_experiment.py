@@ -87,11 +87,17 @@ touch_count = 0
 try:
     print("\nStarting experiment:")
     print("\n  Press Ctrl-C to exit the experiment\n")
-    print("  Ensure the subject is settled in the stall")
-    print(f"  Enter subject # (between 1 and {N_SUBJECT}) to commence the experiment with {N_TRIAL} trials...")
+    print("  Ensure the subject is settled in the stall:")
+    print(f"   - Commencing the experiment with {N_TRIAL} trials...")
 
     while subject_number < 1 or subject_number > N_SUBJECT:
-        subject_number = int(input("\nEnter subject #: "))
+        try:
+            subject_number = int(input(f"\nEnter subject # (between 1 and {N_SUBJECT}): "))
+        except ValueError:
+            subject_number = 0
+
+    # code to check if subject_number is an integer and between 1 and N_SUBJECT if not ask again
+
 
     logfile_name = create_logfile_name(subject_number)
 
