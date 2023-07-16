@@ -122,6 +122,7 @@ try:
             simulate_beep(2)
 
         while True:
+
             # Check if sensor is touched
             if is_touch_active:
                 status = touch_sensor.read()
