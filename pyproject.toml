@@ -12,6 +12,7 @@ dependencies = [
     "fastparquet>=2023.4.0",
     "pandera>=0.14.5",
     "beepy>=1.0.7",
+    "openpyxl>=3.1.2",
 ]
 requires-python = ">=3.9"
 license = {text = "MIT"}

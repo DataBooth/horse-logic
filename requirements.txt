@@ -2,6 +2,7 @@ beepy==1.0.7
 contourpy==1.1.0
 cramjam==2.6.2
 cycler==0.11.0
+et-xmlfile==1.1.0
 fastparquet==2023.7.0
 fonttools==4.40.0
 fsspec==2023.6.0
@@ -11,6 +12,7 @@ matplotlib==3.7.2
 multimethod==1.9.1
 mypy-extensions==1.0.0
 numpy==1.24.3
+openpyxl==3.1.2
 packaging==23.1
 pandas==2.0.3
 pandera==0.14.5
