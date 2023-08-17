@@ -25,8 +25,10 @@ So in terms of the code, would need something to log the same variables - e.g. t
 
 See attached link to footage of device working perfectly for the first time before I broke it.
 
-Attached files:
-- Sample data.xlsx
+Attached files (with renaming):
+- SampleData.xlsx
 - 1Button_manual_testcode.py.zip
-- 8buzzer_testcode_with delay_timelog.py.zip
-- LINK to footage: ln5.sync.com
+- 8buzzer_testcode_with_delay_timelog.py.zip
+
+Link:
+- Footage of trial experiment: https://ln5.sync.com/dl/c14b08cd0/asyyfuhy-jseaaz9x-4xbusjj9-mkvfitvz
