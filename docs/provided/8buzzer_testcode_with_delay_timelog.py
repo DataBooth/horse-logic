@@ -14,15 +14,14 @@ touchSensor = PiicoDev_CAP1203(touchmode="single", sensitivity=5)
 servo_driver = PiicoDev_Servo_Driver()
 
 # Initialise the servo
-servo = PiicoDev_Servo(
-    servo_driver, 1
-)  # Replace '1' with the appropriate channel for the servo
+# Replace '1' with the appropriate channel for the servo
 
 # Customised setup - Attach a servo to channel 1 of the controller with the following properties:
 #    - min_us: the minimum expected pulse length (microseconds)
 #    - max_us: the maximum expected pulse length (microseconds)
 #    - degrees: the angular range of the servo in degrees
 # Uncomment the line below to use customised properties
+
 servo = PiicoDev_Servo(servo_driver, 1, min_us=600, max_us=2400, degrees=270)
 
 # Variables
@@ -54,14 +53,7 @@ try:
             # Check if sensor is touched
             if is_touch_active:
                 status = touchSensor.read()
-                print(
-                    "Touch Pad Status: "
-                    + str(status[1])
-                    + "  "
-                    + str(status[2])
-                    + "  "
-                    + str(status[3])
-                )
+                print(f"Touch Pad Status: {status[1]}  {status[2]}  {status[3]}")
                 sleep_ms(100)
 
                 # Control the servo motor
@@ -100,11 +92,12 @@ try:
                     sequence_count += 1  # Increment the sequence count
 
                     if sequence_count == 10:  # If all sequences are done
-                        # Terminate the script
-                        sys.exit()
+                        # Exit the loop to end the program naturally
+                        break
 
                     break
 
 except KeyboardInterrupt:
     buzz.noTone()  # Stop the buzzer if program is interrupted
     servo.release()  # Release the servo motor
+    sys.exit()
