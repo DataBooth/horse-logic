@@ -31,4 +31,5 @@ Attached files (with renaming):
 - 8buzzer_testcode_with_delay_timelog.py.zip
 
 Link:
-- Footage of trial experiment: https://ln5.sync.com/dl/c14b08cd0/asyyfuhy-jseaaz9x-4xbusjj9-mkvfitvz
+- Footage of trial experiment #1: https://ln5.sync.com/dl/c14b08cd0/asyyfuhy-jseaaz9x-4xbusjj9-mkvfitvz
+- Footage #2 (Test Freckle 4 Sept edited.mov - 4 September 2023): https://ln5.sync.com/dl/41220c530/y4zgpdq5-3hr34wcd-w7pr2q86-k648sk2u
