@@ -2,12 +2,13 @@
 
 ### Data logging
 
-Two components - Per session per horse (whole session of x trials/sequences)
+Two components:
+- Per session per horse (whole session of $N_{\text{TRIAL}}$ trials/sequences).
+- Per trial/sequence within a session.
 
-Per trial/sequence within a session. In the code, a trial is called a
-sequence, but could change it to a trial to make it less confusing.
+*In the code, a trial is called a sequence, but could change it to a trial to make it less confusing.*
 
-Events to log: Bulleted items indicate a logging event.
+Events to log: Bulleted items below indicate logging events.
 
 Start time of code execution (commencement of a session)
 
