@@ -63,13 +63,9 @@ def play_wav_file(tone_name, duration_sec, tone_dir=TONES_DIR):
 def initialise_experiment(subject_number, initial_delay=10):
     data_dir = set_data_dir()
     log_file, measurement_file = create_output_filenames(subject_number)
-
-    log_event(data_dir, log_file, f"Data directory is: {data_dir}")
-    log_event(data_dir, log_file, f"Log file is: {log_file}")
-    log_event(data_dir, log_file, f"Measurement file is: {measurement_file}")
-
-    # Print session started at date/time
-    log_event(data_dir, log_file, "Session started")
+    log_event(data_dir, log_file, f"Data directory: {data_dir}")
+    log_event(data_dir, log_file, f"Log file: {log_file}")
+    log_event(data_dir, log_file, f"Measurement file: {measurement_file}")
     return data_dir, log_file, measurement_file, initial_delay
 
 
@@ -89,11 +85,13 @@ def set_subject_number(N_SUBJECT, N_TRIAL):
     return subject_number
 
 
-### Start of experiment ###
+#### Start of experiment ####
 
 touch_sensor, servo = initialise_sensors(Rpi=RPI_MODE)
 subject_number = set_subject_number(N_SUBJECT, N_TRIAL)
 data_dir, log_file, measurement_file, initial_delay = initialise_experiment(subject_number)
+
+log_event(data_dir, log_file, "Session started...")
 
 # Initialise key tracking variables
 
@@ -103,8 +101,8 @@ last_touch_time = time.time()
 is_touch_active = True
 
 # Example of logging a measurement quantity
-log_event(data_dir, log_file, f"{last_touch_time}", log_as_measurement=True, echo_to_console=False)
 
+log_event(data_dir, log_file, f"Last touch time: {last_touch_time}", log_as_measurement=True, echo_to_console=False)
 log_event(data_dir, log_file, f"Waiting for {initial_delay} seconds before starting the first sequence...")
 time.sleep(initial_delay)  # Add the initial delay
 
@@ -139,7 +137,7 @@ try:
                     # Control the servo motor
                     servo.angle = 180  # Open servo 180 degrees
                     log_event(data_dir, log_file, "Feed dispensed")
-                    time.sleep(0.7)  # Delay for 1 second for operation of servo
+                    time.sleep(0.7)  # Delay for 1 second for operation of servo  ## CHECK: Not actually a second
                     servo.angle = 0  # Close servo
 
                     start_time = time.time()
@@ -153,14 +151,12 @@ try:
                     if touch_count == N_TRIAL:  # Change this number as required for the number of trials ## CHECK THIS number?
                         # Make a different sound after n registered touches
                         play_wav_file("end", duration_sec=3)
-                        touch_count = 0  # Reset touch count after the session ends
+                        touch_count = 0  # Reset touch count after the session ends - ## CHECK: Probs not needed
                         log_event(data_dir, log_file, "Session ended")
-                        # Terminate the script
-                        sys.exit()
-
+                        sys.exit()  # Terminate the script
                     break
 
-        sequence_number += 1  # Increment the sequence number
+        sequence_number += 1  # Increment the sequence number ## CHECK: Get sequence/trial language consistent
 
 except KeyboardInterrupt:
     servo.release()  # Release the servo motor
