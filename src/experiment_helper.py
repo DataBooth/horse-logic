@@ -14,10 +14,10 @@ MAX_TIME_TRIAL_SECONDS = 2 * 60.0
 
 
 def set_data_dir():
-    DATA_DIR = Path.cwd() / "data"
-    if not DATA_DIR.exists():
-        DATA_DIR.mkdir()
-    return DATA_DIR
+    DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # CH: Hard-coded
+    if not Path(DATA_DIR).exists():
+        Path(DATA_DIR).mkdir()
+    return Path(DATA_DIR)
 
 
 def create_output_filenames(subject_number):
@@ -48,35 +48,6 @@ def log_event(
     return None
 
 
-def play_correct_response_tone():
-    """Play the correct response tone."""
-    log_event("Start playing correct response tone", dt.now())
-    play_beep(duration=1)
-    log_event("Finished playing correct response tone", dt.now())
-    return None
-
-
-def dispense_feed():
-    """Dispense feed."""
-    log_event("Dispensing feed", dt.now())
-    # code to dispense feed
-    return None
-
-
-def wait_for_period_of_time(event_name, duration_sec):
-    """Wait for the specified duration in seconds."""
-    log_event(f"{event_name}: Waiting for {duration_sec} seconds", dt.now())
-    sleep(duration_sec)
-    log_event(f"{event_name}: Finished waiting for {duration_sec} seconds", dt.now())
-    return None
-
-
-def wait_for_start_button_press():
-    while True:
-        if input("Press [ENTER] to start the trial") == "":
-            log_event("Trial ready to start", dt.now())
-            break
-    return None
 
 
 def log_trial_parameters(trial_parameters_names, log_file):

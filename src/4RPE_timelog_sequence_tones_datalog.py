@@ -7,7 +7,6 @@ from pathlib import Path
 try:
     from PiicoDev_CAP1203 import PiicoDev_CAP1203
     from PiicoDev_Servo import PiicoDev_Servo, PiicoDev_Servo_Driver
-    from PiicoDev_Unified import sleep_ms
 except ImportError:
     RPI_MODE = False
     print("\n**** Running in non-RPi mode for testing only ****\n")
@@ -23,11 +22,16 @@ tones = {
 N_SUBJECT = 20  # Needs to be set to the actual number of subjects (or larger)
 N_TRIAL = 10  # Needs to be set to the actual number of trials
 N_TOUCH = 3
+SENSITIVITY = 5
+TOUCH_PAD_DELAY = 0.1
+SERVO_DELAY = 0.7
+SERVO_DELAY_AFTER_FEED = 3
+FEED_DISPENSE = 20
 
-TONES_DIR = Path.cwd() / "src" / "tones"
+TONES_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/src/tones"  # CH: example only
 
-if not TONES_DIR.exists():
-    print(f"Tones directory not found: {TONES_DIR.as_posix()}")
+if not Path(TONES_DIR).exists():
+    print(f"\nTones directory not found: {TONES_DIR}\n")
     raise FileExistsError
 
 
@@ -87,7 +91,7 @@ def set_subject_number(N_SUBJECT, N_TRIAL):
 
 #### Start of experiment ####
 
-touch_sensor, servo = initialise_sensors(Rpi=RPI_MODE)
+touch_sensor, servo = initialise_sensors(sensitivity=SENSITIVITY, Rpi=RPI_MODE)
 subject_number = set_subject_number(N_SUBJECT, N_TRIAL)
 data_dir, log_file, measurement_file, initial_delay = initialise_experiment(subject_number)
 
@@ -128,20 +132,18 @@ try:
 
                 if status[1] > 0 or status[2] > 0 or status[3] > 0:
                     log_event(data_dir, log_file, "Touch-pad status read")
-                    sleep_ms(100)
-
-                if status[1] > 0 or status[2] > 0 or status[3] > 0:  ## CHECK: Appears to be same as if condition above?
+                    time.sleep(TOUCH_PAD_DELAY)
                     play_wav_file("correct", duration_sec=2)
-                    time.sleep(3)  # Delay operation of servo for 3 seconds
+                    time.sleep(SERVO_DELAY)
 
                     # Control the servo motor
                     servo.angle = 180  # Open servo 180 degrees
                     log_event(data_dir, log_file, "Feed dispensed")
-                    time.sleep(0.7)  # Delay for 1 second for operation of servo  ## CHECK: Not actually a second
+                    time.sleep(SERVO_DELAY_AFTER_FEED)  # Delay operation of servo
                     servo.angle = 0  # Close servo
 
                     start_time = time.time()
-                    sleep_ms(20000)  # Delay for feed dispense and consumption  ## CHECK: Just use sleep_ms or time.sleep()
+                    time.sleep(FEED_DISPENSE)
 
                     touch_count += 1
                     last_touch_time = time.time()
@@ -159,4 +161,6 @@ try:
         sequence_number += 1  # Increment the sequence number ## CHECK: Get sequence/trial language consistent
 
 except KeyboardInterrupt:
-    servo.release()  # Release the servo motor
+    log_event(data_dir, log_file, "Keyboard interrupt - exiting...")
+    if RPI_MODE:
+        servo.release()  # Release the servo motor
