@@ -23,23 +23,23 @@ Start time of code execution (commencement of a session)
 - Time of touch sensor activation
 - Time of feed dispense
 
-> **Repeat $n = 1, 2, \ldots, N_{TRIAL}$ trials/sequences
+> **Repeat $n = 1, 2, \ldots, N_{\text{TRIAL}}$ trials/sequences**
 
 - Time of next sequence/trial start
 - Time of touch sensor activation
 - Time of feed dispense
 
-> **Completion of $N_{TRIAL}$ trials/sequences**
+> **Completion of $N_{\text{TRIAL}}$ trials/sequences**
 
 - Time of end tone activation (end of a session)
 
 ### Calculations
 
 - **Duration of session**: total time from start of code execution to end tone.
-- **Response latency**:from start tone activation to touch sensor
+- **Response latency**: from start tone activation to touch sensor
 activation - how long it takes horse to respond to cue and make the touch
 response.
-- **Duration of a trial/sequence-**: time period between one start tone and
+- **Duration of a trial/sequence**: time period between one start tone and
 the next start tone. Even though the feed dispense and eat time is a
 fixed amount of time would like to log this in case we change the eat
 time to a variable time (unlikely but a possibility).
