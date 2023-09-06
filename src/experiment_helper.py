@@ -1,9 +1,5 @@
 from datetime import datetime as dt
-from functools import cache
-import numpy as np
-import simpleaudio as sa
 from pathlib import Path
-import os
 
 
 # Define key hardware parameters
@@ -40,13 +36,15 @@ def log_event(
 ):
     """Log the event name and time to a file."""
     if event_time is None:
-        event_time = dt.now().strftime("%Y-%m-%d %H:%M:%S")
+        event_time = dt.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     with open(Path(data_dir) / log_file, "a") as f:
         f.write(f"{event_time}: {event_name}\n")
     if echo_to_console:
         print(f"Logged - {event_time}: {event_name}\n")
     if log_as_measurement:
-        log_measurement(data_dir, measurement_file, event_name, event_time)
+        measurement_file = log_file.replace(".log", ".dat")
+        with open(Path(data_dir) / measurement_file, "a") as f:
+            f.write(f"{event_time}: {event_name}\n")
     return None
 
 

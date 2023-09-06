@@ -2,25 +2,33 @@ import time
 import sys
 import pygame
 from datetime import datetime
+from pathlib import Path
 
 try:
-    # from PiicoDev_Buzzer import PiicoDev_Buzzer
     from PiicoDev_CAP1203 import PiicoDev_CAP1203
     from PiicoDev_Servo import PiicoDev_Servo, PiicoDev_Servo_Driver
     from PiicoDev_Unified import sleep_ms
 except ImportError:
     RPI_MODE = False
+    print("\n**** Running in non-RPi mode for testing only ****\n")
 
 from experiment_helper import create_output_filenames, set_data_dir, log_event
 
 tones = {
-    "start": "/home/horselogic/Documents/test audio project_data/Start tone _600.wav",
-    "correct": "/home/horselogic/Documents/test audio project_data/Correct tone_1000.wav",
-    "end": "/home/horselogic/Documents/test audio project_data/End tone_1200.wav",
+    "start": "Start_tone_600.wav",
+    "correct": "Correct_tone_1000.wav",
+    "end": "End_tone_1200.wav",
 }
 
 N_SUBJECT = 20  # Needs to be set to the actual number of subjects (or larger)
 N_TRIAL = 10  # Needs to be set to the actual number of trials
+N_TOUCH = 3
+
+TONES_DIR = Path.cwd() / "src" / "tones"
+
+if not TONES_DIR.exists():
+    print(f"Tones directory not found: {TONES_DIR.as_posix()}")
+    raise FileExistsError
 
 
 def initialise_sensors(sensitivity=4, Rpi=False):
@@ -41,23 +49,15 @@ def initialise_sensors(sensitivity=4, Rpi=False):
         return None, None
 
 
-def play_wav_file(file_path, duration):
+def play_wav_file(tone_name, duration_sec, tone_dir=TONES_DIR):
+    if not Path(tone_dir).exists():
+        # print error and exit
+        raise FileNotFoundError
     pygame.mixer.init()
-    sound = pygame.mixer.Sound(file_path)
+    sound = pygame.mixer.Sound(f"{tone_dir}/{tones[tone_name]}")
     sound.play()
-
-    # wait for the specified duration (s)
-    time.sleep(duration)
-
-    # silence the tone
+    time.sleep(duration_sec)  # wait for the specified duration (s)
     sound.stop()
-
-    # pygame.mixer.music.load(file_path) #OLD-worked
-    # pygame.mixer.music.play() OLD-worked
-
-    # wait for the music to finish playing OLD worked
-    # while pygame.mixer.music.get_busy():
-    # time.sleep(0.1)
 
 
 def initialise_experiment(subject_number, initial_delay=10):
@@ -69,42 +69,41 @@ def initialise_experiment(subject_number, initial_delay=10):
     log_event(data_dir, log_file, f"Measurement file is: {measurement_file}")
 
     # Print session started at date/time
-    log_event(data_dir, log_file, f"Session started at: {datetime.now()}")
+    log_event(data_dir, log_file, "Session started")
     return data_dir, log_file, measurement_file, initial_delay
 
 
-### Start of experiment
+def set_subject_number(N_SUBJECT, N_TRIAL):
+    subject_number = 0
+
+    print("\nStarting experiment:")
+    print("\n  Press Ctrl-C to exit the experiment\n")
+    print("  Ensure the subject is settled in the stall:")
+    print(f"   - Commencing the experiment with {N_TRIAL} trials...")
+
+    while subject_number < 1 or subject_number > N_SUBJECT:
+        try:
+            subject_number = int(input(f"\nEnter subject number (between 1 and {N_SUBJECT}): "))
+        except ValueError:
+            subject_number = 0
+    return subject_number
+
+
+### Start of experiment ###
 
 touch_sensor, servo = initialise_sensors(Rpi=RPI_MODE)
-
-if not RPI_MODE:
-    print("Running in non-Rpi mode for testing only")
-
+subject_number = set_subject_number(N_SUBJECT, N_TRIAL)
+data_dir, log_file, measurement_file, initial_delay = initialise_experiment(subject_number)
 
 # Initialise key tracking variables
-subject_number = 0
-sequence_count = 0  # Initialise the sequence count
+
+sequence_count = 0
 touch_count = 0
 last_touch_time = time.time()
 is_touch_active = True
 
-## TODO: Need to allow setting the subject number - interactive?
-
-print("\nStarting experiment:")
-print("\n  Press Ctrl-C to exit the experiment\n")
-print("  Ensure the subject is settled in the stall:")
-print(f"   - Commencing the experiment with {N_TRIAL} trials...")
-
-while subject_number < 1 or subject_number > N_SUBJECT:
-    try:
-        subject_number = int(input(f"\nEnter subject number (between 1 and {N_SUBJECT}): "))
-    except ValueError:
-        subject_number = 0
-
-data_dir, log_file, measurement_file, initial_delay = initialise_experiment(subject_number=1)
-
-# Initial delay before the first sequence (in seconds)
-initial_delay = initial_delay
+# Example of logging a measurement quantity
+log_event(data_dir, log_file, f"{last_touch_time}", log_as_measurement=True, echo_to_console=False)
 
 log_event(data_dir, log_file, f"Waiting for {initial_delay} seconds before starting the first sequence...")
 time.sleep(initial_delay)  # Add the initial delay
@@ -114,58 +113,48 @@ time.sleep(initial_delay)  # Add the initial delay
 try:
     sequence_number = 1  # Initialize the sequence number
 
-    while touch_count < 3:  # Adjust the number of touches as needed
+    while touch_count < N_TOUCH:  # Adjust the number of touches as needed
         # Print the current sequence number
-        print(f"Current sequence: {sequence_number}")
-
-        # Play start tone buzzer
-        # buzz.tone(1000, 2000)  # Start the start tone
-        # time.sleep(2)  # Delay for 2 seconds
-        # buzz.noTone()  # Stop the start tone
-        # start_time = datetime.now()
-
-        # play start tone mp3
-        play_wav_file(tone_paths[0], 2)
-        # time.sleep(2) # play tone for 2s
-        print(f"Start tone played at: {datetime.now()}")
+        log_event(data_dir, log_file, f"Current sequence: {sequence_number}")
+        play_wav_file("start", duration_sec=2)
+        log_event(data_dir, log_file, "Start tone played")
 
         while True:
+            if not RPI_MODE:
+                print("\n**** Exiting non-RPi mode (testing only) ****\n")
+                sys.exit()
+
             # Check if sensor is touched
             if is_touch_active:
                 status = touch_sensor.read()
 
                 if status[1] > 0 or status[2] > 0 or status[3] > 0:
-                    print(f"Touch-pad status read at: {datetime.now()}")
+                    log_event(data_dir, log_file, "Touch-pad status read")
                     sleep_ms(100)
 
-                if status[1] > 0 or status[2] > 0 or status[3] > 0:
-                    # Make the buzzer sound for a maximum of 2 seconds
-                    # buzz.tone(800, 2000)  # Start the buzzer tone
-                    play_wav_file(tone_paths[1], 2)  # play correct tone for 2 s
-                    # time.sleep(2) # play correct tone for 2s
+                if status[1] > 0 or status[2] > 0 or status[3] > 0:  ## CHECK: Appears to be same as if condition above?
+                    play_wav_file("correct", duration_sec=2)
                     time.sleep(3)  # Delay operation of servo for 3 seconds
 
                     # Control the servo motor
                     servo.angle = 180  # Open servo 180 degrees
-                    print(f"Feed dispensed at: {datetime.now()}")
+                    log_event(data_dir, log_file, "Feed dispensed")
                     time.sleep(0.7)  # Delay for 1 second for operation of servo
                     servo.angle = 0  # Close servo
 
                     start_time = time.time()
-                    sleep_ms(20000)  # Delay for feed dispense and consumption
+                    sleep_ms(20000)  # Delay for feed dispense and consumption  ## CHECK: Just use sleep_ms or time.sleep()
 
                     touch_count += 1
                     last_touch_time = time.time()
 
-                    if touch_count == 10:  # Change this number as required for the number of trials
+                    log_event(data_dir, log_file, f"{last_touch_time}", log_as_measurement=True, echo_to_console=False)
+
+                    if touch_count == N_TRIAL:  # Change this number as required for the number of trials ## CHECK THIS number?
                         # Make a different sound after n registered touches
-                        # buzz.tone(1200, 500)  # Start the different buzzer tone
-                        # time.sleep(0.5)
-                        # buzz.noTone()  # Stop the different buzzer tone
-                        play_wav_file(tone_paths[2], 3)  # play end of session tone for 3 s
-                        # time.sleep(3) #play end of session tone for 3s)
+                        play_wav_file("end", duration_sec=3)
                         touch_count = 0  # Reset touch count after the session ends
-                        print(f"Session ended at: {datetime.now()}")
+                        log_event(data_dir, log_file, "Session ended")
                         # Terminate the script
                         sys.exit()
 
@@ -174,5 +163,4 @@ try:
         sequence_number += 1  # Increment the sequence number
 
 except KeyboardInterrupt:
-    # buzz.noTone()  # Stop the buzzer if the program is interrupted
     servo.release()  # Release the servo motor
