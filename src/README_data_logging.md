@@ -24,7 +24,7 @@ Start time of code execution (commencement of a session)
 - Time of touch sensor activation
 - Time of feed dispense
 
-> **Repeat $n = 1, 2, \ldots, N_{\text{TRIAL}}$ trials/sequences**
+> **Repeat $n = 1, 2, \ldots, N_{\text{TRIAL}}$ trials/sequences in total**
 
 - Time of next sequence/trial start
 - Time of touch sensor activation
