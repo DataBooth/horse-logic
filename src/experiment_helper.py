@@ -2,10 +2,6 @@ from datetime import datetime as dt
 from pathlib import Path
 
 
-MAX_N_OBSERVATION = 30
-MAX_TIME_TRIAL_SECONDS = 2 * 60.0
-
-
 def set_directory(dir_name):
     """
     Check if a directory with the given name exists.
