@@ -70,7 +70,7 @@ def initialise_servo(servo_channel=SERVO_CHANNEL):
         servo_channel (int, optional): The channel number of the servo motor. Default is SERVO_CHANNEL.
 
     Returns:
-        PiicoDev_Servo: The initialized servo motor object.
+        PiicoDev_Servo: The initialised servo motor object.
     """
     servo_driver = PiicoDev_Servo_Driver()
     servo = PiicoDev_Servo(servo_driver, servo_channel)
@@ -129,7 +129,7 @@ def initialise_experiment(subject_number, initial_delay=10):
     Initialises the experiment by creating directories, generating output filenames, and logging important information.
 
     Args:
-        subject_number (int): The number of the subject for which the experiment is being initialized.
+        subject_number (int): The number of the subject for which the experiment is being initialised.
         initial_delay (int, optional): The initial delay in seconds before the experiment starts. Default is 10 seconds.
 
     Returns:
@@ -226,7 +226,7 @@ time.sleep(initial_delay)  # Add the initial delay
 # Main loop
 
 try:
-    sequence_number = 1  # Initialize the sequence number
+    sequence_number = 1  # Initialise the sequence number
     is_button_pressed = False
 
     while touch_count < N_TOUCH and not is_button_pressed:  # Adjust the number of touches as needed

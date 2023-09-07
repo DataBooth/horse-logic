@@ -7,16 +7,19 @@ def set_directory(dir_name):
     Check if a directory with the given name exists.
 
     Args:
-        dir_name (str): The name of the directory to be checked.
+        dir_name (str or Path): The name or path of the directory to be checked.
 
     Raises:
-        FileExistsError: If the directory doesn't exist.
+        TypeError: If dir_name is not a string or a Path object.
+        FileNotFoundError: If the directory doesn't exist.
 
     Example:
         set_directory('my_directory')
         In this example, the function is called with the directory name 'my_directory'.
-        If the directory doesn't exist, a FileExistsError exception will be raised.
+        If the directory doesn't exist, a FileNotFoundError exception will be raised.
     """
+    if not isinstance(dir_name, (str, Path)):
+        raise TypeError("dir_name must be a string or a Path object.")
     if not Path(dir_name).exists():
         raise FileNotFoundError(f"The specified directory {dir_name} does not exist.")
     return Path(dir_name)
