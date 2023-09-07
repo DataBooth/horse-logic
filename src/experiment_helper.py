@@ -6,19 +6,24 @@ MAX_N_OBSERVATION = 30
 MAX_TIME_TRIAL_SECONDS = 2 * 60.0
 
 
-def set_data_dir():
+def set_directory(dir_name):
     """
-    Sets the path for the data directory.
+    Check if a directory with the given name exists.
 
-    If the directory doesn't exist, it creates the directory and returns the path.
+    Args:
+        dir_name (str): The name of the directory to be checked.
 
-    Returns:
-        Path: The `Path` object representing the data directory.
+    Raises:
+        FileExistsError: If the directory doesn't exist.
+
+    Example:
+        set_directory('my_directory')
+        In this example, the function is called with the directory name 'my_directory'.
+        If the directory doesn't exist, a FileExistsError exception will be raised.
     """
-    DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # CH: Hard-coded
-    if not Path(DATA_DIR).exists():
-        Path(DATA_DIR).mkdir()
-    return Path(DATA_DIR)
+    if not Path(dir_name).exists():
+        raise FileNotFoundError(f"The specified directory {dir_name} does not exist.")
+    return Path(dir_name)
 
 
 def create_output_filenames(subject_number):
