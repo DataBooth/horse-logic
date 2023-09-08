@@ -11,7 +11,7 @@ except ImportError:
     RPI_MODE = False
     print("\n**** Running in non-RPi mode for testing only ****\n")
 
-from experiment_helper import create_output_filenames, set_directory, log_event
+from experiment_helper import create_output_filenames, set_directory, log_event, load_experiment_tracking
 
 tones = {
     "start": "Start_tone_600.wav",
@@ -56,7 +56,9 @@ def initialise_touch_sensor(sensitivity):
         PiicoDev_CAP1203: The initialised touch sensor object.
     """
     if sensitivity < SENSITIVITY_MIN or sensitivity > SENSITIVITY_MAX:
-        raise ValueError(f"Invalid sensitivity level. Sensitivity must be between {SENSITIVITY_MIN} and {SENSITIVITY_MAX}.")
+        raise ValueError(
+            f"Invalid sensitivity level. Sensitivity must be between {SENSITIVITY_MIN} and {SENSITIVITY_MAX}."
+        )
 
     touch_sensor = PiicoDev_CAP1203(touchmode="single", sensitivity=sensitivity)
     return touch_sensor
@@ -124,9 +126,22 @@ def play_wav_file(tone_name, duration_sec, tone_dir):
     sound.stop()
 
 
+def initialise_directories():
+    """
+    Initialises the data and tone directories.
+
+    Returns:
+    - data_dir: The initialized data directory.
+    - tone_dir: The initialized tone directory.
+    """
+    data_dir = set_directory(DATA_DIR)
+    tone_dir = set_directory(TONE_DIR)
+    return data_dir, tone_dir
+
+
 def initialise_experiment(subject_number, initial_delay=10):
     """
-    Initialises the experiment by creating directories, generating output filenames, and logging important information.
+    Initialises the experiment by generating output filenames, and logging important information.
 
     Args:
         subject_number (int): The number of the subject for which the experiment is being initialised.
@@ -134,40 +149,32 @@ def initialise_experiment(subject_number, initial_delay=10):
 
     Returns:
         tuple: A tuple containing the following elements:
-            - data_dir (str): The path to the data directory.
-            - tone_dir (str): The path to the tone directory.
             - log_file (str): The name of the log file.
             - measurement_file (str): The name of the measurement file.
             - initial_delay (int): The initial delay in seconds before the experiment starts.
     """
-    data_dir = set_directory(DATA_DIR)
-    tone_dir = set_directory(TONE_DIR)
     log_file, measurement_file = create_output_filenames(subject_number)
     log_event(data_dir, log_file, f"Data directory: {data_dir}")
     log_event(data_dir, log_file, f"Log file: {log_file}")
     log_event(data_dir, log_file, f"Measurement file: {measurement_file}")
-    return data_dir, tone_dir, log_file, measurement_file, initial_delay
+    return log_file, measurement_file, initial_delay
 
 
-# CH: Do we also want to allow/record the Session number (for each subject)?
-def set_subject_number(N_SUBJECT, N_TRIAL):
+# CH: Do we also want to allow/record the Session number (for each subject)? Draft idea added
+def set_subject_number(N_SUBJECT, N_TRIAL, data_dir):
     """
-    Prompts the user to enter a subject number between 1 and N_SUBJECT.
+    Sets the subject number for the experiment and calculates the next session number for the given subject.
 
     Args:
-        N_SUBJECT (int): The maximum number of subjects.
+        N_SUBJECT (int): The total number of subjects.
         N_TRIAL (int): The number of trials.
+        data_dir (str): The path to the data directory.
 
     Returns:
-        int: The selected subject number within the valid range.
-
-    Example Usage:
-        N_SUBJECT = 10
-        N_TRIAL = 5
-        subject_number = set_subject_number(N_SUBJECT, N_TRIAL)
-        print(f"Selected subject number: {subject_number}")
-
+        subject_number (int): The subject number for the experiment.
+        session_number (int): The next session number for the given subject.
     """
+
     subject_number = 0
     print("\nStarting experiment:")
     print("\n  Press Ctrl-C to exit the experiment\n")
@@ -179,17 +186,19 @@ def set_subject_number(N_SUBJECT, N_TRIAL):
             subject_number = int(input(f"\nEnter subject number (between 1 and {N_SUBJECT}): "))
         except ValueError:
             subject_number = 0
-    return subject_number
+    session_number = load_experiment_tracking(subject_number, N_SUBJECT, data_dir)
+    return subject_number, session_number
 
 
 #### Start of experiment ####
 
 pygame.mixer.init()  # Initialise the mixer module for playing WAV files
 touch_sensor, servo = initialise_sensors(sensitivity=SENSITIVITY, Rpi=RPI_MODE)
-subject_number = set_subject_number(N_SUBJECT, N_TRIAL)
-data_dir, tone_dir, log_file, measurement_file, initial_delay = initialise_experiment(subject_number)
+data_dir, tone_dir = initialise_directories()
+subject_number, session_number = set_subject_number(N_SUBJECT, N_TRIAL, data_dir)
+log_file, measurement_file, initial_delay = initialise_experiment(subject_number)
 
-log_event(data_dir, log_file, "Session started...")
+log_event(data_dir, log_file, f"Subject {subject_number} - Session {session_number} started...")
 
 # Initialise key tracking variables
 

@@ -1,5 +1,6 @@
 from datetime import datetime as dt
 from pathlib import Path
+import pandas as pd
 
 
 def set_directory(dir_name):
@@ -116,3 +117,27 @@ def log_trial_parameters(trial_parameters_names, log_file):
         f.write(f"TRIAL PARAMETERS: {trial_parameters}\n")
     print(f"Logged - TRIAL PARAMETERS: {trial_parameters}\n")
     return None
+
+
+def load_experiment_tracking(subject_number, N_SUBJECT, data_dir, tracking_file="experiment_tracker.txt"):
+    if not Path(data_dir).exists():
+        raise FileNotFoundError(f"Data directory {data_dir} does not exist.")
+    print(f"Tracking file from {Path(data_dir) / tracking_file}")
+    if not (Path(data_dir) / tracking_file).exists():
+        # Create new tracking file
+        with open(Path(data_dir) / tracking_file, "a") as f:
+            f.write("subject_number,last_session")
+            for i in range(N_SUBJECT):
+                f.write(f"\n{i+1},0")
+    # Read in either existing or newly created tracking file
+    experiment_tracking_df = pd.read_csv(Path(data_dir) / tracking_file, skiprows=0)
+    session_number = (
+        experiment_tracking_df.loc[experiment_tracking_df["subject_number"] == subject_number, "last_session"].values[0]
+        + 1
+    )
+    experiment_tracking_df.loc[
+        experiment_tracking_df["subject_number"] == subject_number, "last_session"
+    ] = session_number
+    # Update the tracking file with the new session number
+    experiment_tracking_df.to_csv(Path(data_dir) / tracking_file, index=False)
+    return session_number
