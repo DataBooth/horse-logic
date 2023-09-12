@@ -153,13 +153,13 @@ def get_next_session_number(subject_name, data_dir, tracking_file="experiment_tr
     # Read in the tracking file
     experiment_tracking_df = pd.read_excel(Path(data_dir) / tracking_file)
     experiment_tracking_df["subject_name_clean"] = experiment_tracking_df["subject_name"].apply(
-        lambda x: x.lower().replace(" ", "")
+        lambda name: name.lower().replace(" ", "")
     )
     subject_names = [name.lower() for name in experiment_tracking_df["subject_name"].values.tolist()]
     # Amend to allow for subject names with spaces
     subject_names = [name.replace(" ", "") for name in subject_names]
-    if subject_name.replace(" ", "") not in subject_names:
-        print(f"Subject {subject_name} not found in tracking file.")
+    if subject_name.lower().replace(" ", "") not in subject_names:
+        print(f"Subject {subject_name} not found in tracking file.\nSee {(Path(data_dir) / tracking_file).as_posix()}.")
         return 0, 0
     next_session_number = (
         experiment_tracking_df["subject_name_clean"]
@@ -167,10 +167,29 @@ def get_next_session_number(subject_name, data_dir, tracking_file="experiment_tr
         .values[0]
         + 1
     )
-    # TODO: experiment_tracking_df.loc[experiment_tracking_df["subject_name"] == subject_name, "last_session"] = next_session_number
+    experiment_tracking_df.loc[
+        experiment_tracking_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False),
+        "last_session_number",
+    ] = next_session_number
     # Update the tracking file with the next session number for the given subject (subject_name)
     experiment_tracking_df.to_excel(Path(data_dir) / tracking_file, index=False)
     return subject_name, next_session_number
+
+
+def choose_experiment_type():
+    # Allow the user to choose the experiment type by entering the number corresponding to the experiment type
+    experiment_types = ["RPE-A", "RPE-B", "Experiment 3"]
+    experiment_number = 0
+    print("\nChoose experiment type:")
+    for i, experiment_type in enumerate(experiment_types):
+        print(f"{i+1} - {experiment_type}")
+    while experiment_number < 1 or experiment_number > len(experiment_types):
+        try:
+            experiment_number = int(input("\nEnter experiment type: "))
+        except ValueError:
+            experiment_number = 0
+    experiment_type = experiment_types[experiment_number - 1]
+    return experiment_type
 
 
 def confirm_experiment_details(subject_name, session_number, experiment_type, N_TRIAL):

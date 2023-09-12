@@ -17,6 +17,7 @@ from experiment_helper import (
     log_event,
     set_subject_number,
     confirm_experiment_details,
+    choose_experiment_type,
 )
 
 tones = {
@@ -173,7 +174,7 @@ touch_sensor, servo = initialise_sensors(sensitivity=SENSITIVITY, Rpi=RPI_MODE)
 data_dir, tone_dir = initialise_directories()
 subject_name, session_number = set_subject_number(N_SUBJECT, N_TRIAL, data_dir)
 # experiment_type -- todo put in choice function
-experiment_type = "RPE-A"
+experiment_type = choose_experiment_type()
 if not confirm_experiment_details(subject_name, session_number, experiment_type, N_TRIAL):
     sys.exit()
 
