@@ -11,7 +11,13 @@ except ImportError:
     RPI_MODE = False
     print("\n**** Running in non-RPi mode for testing only ****\n")
 
-from experiment_helper import create_output_filenames, set_directory, log_event, load_experiment_tracking
+from experiment_helper import (
+    create_output_filenames,
+    set_directory,
+    log_event,
+    set_subject_number,
+    confirm_experiment_details,
+)
 
 tones = {
     "start": "Start_tone_600.wav",
@@ -139,7 +145,7 @@ def initialise_directories():
     return data_dir, tone_dir
 
 
-def initialise_experiment(subject_number, initial_delay=10):
+def initialise_experiment(subject_name, initial_delay=10):
     """
     Initialises the experiment by generating output filenames, and logging important information.
 
@@ -153,41 +159,11 @@ def initialise_experiment(subject_number, initial_delay=10):
             - measurement_file (str): The name of the measurement file.
             - initial_delay (int): The initial delay in seconds before the experiment starts.
     """
-    log_file, measurement_file = create_output_filenames(subject_number)
+    log_file, measurement_file = create_output_filenames(subject_name, session_number, experiment_type)
     log_event(data_dir, log_file, f"Data directory: {data_dir}")
     log_event(data_dir, log_file, f"Log file: {log_file}")
     log_event(data_dir, log_file, f"Measurement file: {measurement_file}")
     return log_file, measurement_file, initial_delay
-
-
-# CH: Do we also want to allow/record the Session number (for each subject)? Draft idea added
-def set_subject_number(N_SUBJECT, N_TRIAL, data_dir):
-    """
-    Sets the subject number for the experiment and calculates the next session number for the given subject.
-
-    Args:
-        N_SUBJECT (int): The total number of subjects.
-        N_TRIAL (int): The number of trials.
-        data_dir (str): The path to the data directory.
-
-    Returns:
-        subject_number (int): The subject number for the experiment.
-        session_number (int): The next session number for the given subject.
-    """
-
-    subject_number = 0
-    print("\nStarting experiment:")
-    print("\n  Press Ctrl-C to exit the experiment\n")
-    print("  Ensure the subject is settled in the stall:")
-    print(f"   - Commencing the experiment with {N_TRIAL} trials...")
-
-    while subject_number < 1 or subject_number > N_SUBJECT:
-        try:
-            subject_number = int(input(f"\nEnter subject number (between 1 and {N_SUBJECT}): "))
-        except ValueError:
-            subject_number = 0
-    session_number = load_experiment_tracking(subject_number, N_SUBJECT, data_dir)
-    return subject_number, session_number
 
 
 #### Start of experiment ####
@@ -195,10 +171,15 @@ def set_subject_number(N_SUBJECT, N_TRIAL, data_dir):
 pygame.mixer.init()  # Initialise the mixer module for playing WAV files
 touch_sensor, servo = initialise_sensors(sensitivity=SENSITIVITY, Rpi=RPI_MODE)
 data_dir, tone_dir = initialise_directories()
-subject_number, session_number = set_subject_number(N_SUBJECT, N_TRIAL, data_dir)
-log_file, measurement_file, initial_delay = initialise_experiment(subject_number)
+subject_name, session_number = set_subject_number(N_SUBJECT, N_TRIAL, data_dir)
+# experiment_type -- todo put in choice function
+experiment_type = "RPE-A"
+if not confirm_experiment_details(subject_name, session_number, experiment_type, N_TRIAL):
+    sys.exit()
 
-log_event(data_dir, log_file, f"Subject {subject_number} - Session {session_number} started...")
+log_file, measurement_file, initial_delay = initialise_experiment(subject_name)
+
+log_event(data_dir, log_file, f"Subject {subject_name} - Session {session_number} started...")
 
 # Initialise key tracking variables
 
