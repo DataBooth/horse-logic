@@ -1,6 +1,7 @@
 from datetime import datetime as dt
 from pathlib import Path
 import pandas as pd
+from dataclasses import dataclass
 
 
 def set_directory(dir_name):
@@ -47,9 +48,9 @@ def create_output_filenames(subject_name, session_number, experiment_type):
 
 
 def log_event(
+    event_name,
     data_dir,
     log_file,
-    event_name,
     log_as_measurement=False,
     event_time=None,
     echo_to_console=True,
@@ -88,59 +89,26 @@ def log_event(
     return None
 
 
-def log_trial_parameters(trial_parameters_names, log_file):
-    """
-    Log the trial parameters to a file and print them to the console.
-
-    Args:
-        trial_parameters_names (list): A list of strings representing the names of the trial parameters.
-        log_file (str): The path to the log file where the trial parameters will be logged.
-
-    Returns:
-        None
-
-    Example Usage:
-        trial_parameters_names = ['param1', 'param2']
-        log_file = 'trial_log.txt'
-        param1 = 10
-        param2 = 'hello'
-        log_trial_parameters(trial_parameters_names, log_file)
-
-    This function logs the trial parameters to a file and prints them to the console.
-    The trial parameters are obtained by creating a dictionary using a dictionary comprehension,
-    where the keys are the elements in `trial_parameters_names` and the values are the values of the corresponding variables.
-    The trial parameters are then written to the log file in append mode and printed to the console.
-    """
-    trial_parameters = {key: eval(key) for key in trial_parameters_names}
-
-    with open(log_file, "a") as f:
-        f.write(f"TRIAL PARAMETERS: {trial_parameters}\n")
-    print(f"Logged - TRIAL PARAMETERS: {trial_parameters}\n")
+def log_trial_parameters(parameters, data_dir, log_file):
+    params = {key: eval(key) for key in parameters}
+    with open(Path(data_dir) / log_file, "a") as f:
+        f.write(f"PARAMETERS: {params}\n")
+    print(f"Logged - PARAMETERS: {params}\n")
     return None
 
 
-def set_subject_number(N_SUBJECT, N_TRIAL, data_dir):
-    """
-    Sets the subject number for the experiment and calculates the next session number for the given subject.
-
-    Args:
-        N_SUBJECT (int): The total number of subjects.
-        N_TRIAL (int): The number of trials.
-        data_dir (str): The path to the data directory.
-
-    Returns:
-        subject_number (int): The subject number for the experiment.
-        session_number (int): The next session number for the given subject.
-    """
+def set_subject_number(N_TRIAL, data_dir):
     subject_name = 0
     print("\nStarting experiment:")
     print("\n  Press Ctrl-C to exit the experiment\n")
     print("  Ensure the subject is settled in the stall:")
-    print(f"   - Commencing the experiment with {N_TRIAL} trials...")
+    print(
+        f"   - Commencing the experiment with {N_TRIAL} trials..."
+    )  # May be to adjust for various types of experiments
 
     while subject_name == 0:
         try:
-            subject_name = input(f"\nEnter subject name: ")
+            subject_name = input("\nEnter subject name: ")
         except ValueError:
             subject_name = 0
         subject_name, next_session_number = get_next_session_number(subject_name, data_dir)
@@ -214,3 +182,49 @@ def confirm_experiment_details(subject_name, session_number, experiment_type, N_
         return False
     else:
         return True
+
+
+@dataclass
+class Parameter:
+    name: str
+    val: float
+    unit: str
+    minimum_value: float
+    maximum_value: float
+    description: str
+
+
+def parse_text_for_na(value):
+    if pd.isna(value):
+        return ""
+    else:
+        return value
+
+
+def get_parameter(name, experimental_parameters_df):
+    row = experimental_parameters_df.loc[experimental_parameters_df["name"] == name]
+    if row.drop(columns=["name"]).isnull().values.all():
+        return None
+    return Parameter(
+        name=name,
+        val=row["value"].values[0],
+        minimum_value=row["minimum_value"].values[0],
+        maximum_value=row["maximum_value"].values[0],
+        unit=parse_text_for_na(row["unit"].values[0]),
+        description=parse_text_for_na(row["description"].values[0]),
+    )
+
+
+def load_validate_experimental_parameters(data_dir, parameters_xlsx="experimental_parameters.xlsx"):
+    if not Path(data_dir / parameters_xlsx).exists():
+        raise FileNotFoundError(f"{parameters_xlsx} does not exist")
+    experimental_parameters_df = pd.read_excel(Path(data_dir / parameters_xlsx))
+    par = {}
+    for name in experimental_parameters_df["name"]:
+        parameter = get_parameter(name, experimental_parameters_df)
+        if parameter is not None:
+            if parameter.val < parameter.minimum_value or parameter.val > parameter.maximum_value:
+                print(f"{parameter.name} is out of range: {parameter.val} {parameter.unit}")
+            print(f"{parameter.name}: {parameter.val} {parameter.unit} - Validated")
+            par[name] = parameter.val
+    return par

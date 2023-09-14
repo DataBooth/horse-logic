@@ -18,6 +18,8 @@ from experiment_helper import (
     set_subject_number,
     confirm_experiment_details,
     choose_experiment_type,
+    load_validate_experimental_parameters,
+    log_trial_parameters,
 )
 
 tones = {
@@ -25,26 +27,6 @@ tones = {
     "correct": "Correct_tone_1000.wav",
     "end": "End_tone_1200.wav",
 }
-
-N_SUBJECT = 20  # Needs to be set to the actual number of subjects (or larger)
-N_TRIAL = 10  # Needs to be set to the actual number of trials
-
-# CH: Do we need the following quantities or similar?
-MAX_TIME_TRIAL_SECONDS = 2 * 60.0
-MAX_N_OBSERVATION = 30
-
-N_TOUCH = 3
-SENSITIVITY = 5
-SENSITIVITY_MIN = 1  # CH: Check the min and max allowed values (good way to check you using a valid value)
-SENSITIVITY_MAX = 6
-TOUCH_PAD_DELAY = 0.1
-
-SERVO_CHANNEL = 1
-SERVO_OPEN = 180  # Open servo 180 degrees
-SERVO_CLOSE = 0  # Close servo
-SERVO_DELAY = 0.7
-SERVO_DELAY_AFTER_FEED = 3
-FEED_DISPENSE = 20
 
 # Specify the paths for the data directory and the tones directory.
 
@@ -62,16 +44,11 @@ def initialise_touch_sensor(sensitivity):
     Returns:
         PiicoDev_CAP1203: The initialised touch sensor object.
     """
-    if sensitivity < SENSITIVITY_MIN or sensitivity > SENSITIVITY_MAX:
-        raise ValueError(
-            f"Invalid sensitivity level. Sensitivity must be between {SENSITIVITY_MIN} and {SENSITIVITY_MAX}."
-        )
-
     touch_sensor = PiicoDev_CAP1203(touchmode="single", sensitivity=sensitivity)
     return touch_sensor
 
 
-def initialise_servo(servo_channel=SERVO_CHANNEL):
+def initialise_servo(servo_channel):
     """
     Initialises a servo motor.
 
@@ -86,7 +63,7 @@ def initialise_servo(servo_channel=SERVO_CHANNEL):
     return servo
 
 
-def initialise_sensors(sensitivity=4, Rpi=False):
+def initialise_sensors(sensitivity, servo_channel, Rpi=False):
     """
     Initialises the sensors based on the given parameters.
 
@@ -103,7 +80,7 @@ def initialise_sensors(sensitivity=4, Rpi=False):
     """
     if Rpi:
         touch_sensor = initialise_touch_sensor(sensitivity)
-        servo = initialise_servo(SERVO_CHANNEL)
+        servo = initialise_servo(servo_channel)
         return touch_sensor, servo
     else:
         return None, None
@@ -146,7 +123,7 @@ def initialise_directories():
     return data_dir, tone_dir
 
 
-def initialise_experiment(subject_name, initial_delay=10):
+def initialise_experiment(subject_name, initial_delay, experiment_type):
     """
     Initialises the experiment by generating output filenames, and logging important information.
 
@@ -161,26 +138,30 @@ def initialise_experiment(subject_name, initial_delay=10):
             - initial_delay (int): The initial delay in seconds before the experiment starts.
     """
     log_file, measurement_file = create_output_filenames(subject_name, session_number, experiment_type)
-    log_event(data_dir, log_file, f"Data directory: {data_dir}")
-    log_event(data_dir, log_file, f"Log file: {log_file}")
-    log_event(data_dir, log_file, f"Measurement file: {measurement_file}")
+    log_event(f"Data directory: {data_dir}", data_dir, log_file)
+    log_event(f"Log file: {log_file}", data_dir, log_file)
+    log_event(f"Measurement file: {measurement_file}", data_dir, log_file)
     return log_file, measurement_file, initial_delay
 
 
 #### Start of experiment ####
 
 pygame.mixer.init()  # Initialise the mixer module for playing WAV files
-touch_sensor, servo = initialise_sensors(sensitivity=SENSITIVITY, Rpi=RPI_MODE)
 data_dir, tone_dir = initialise_directories()
-subject_name, session_number = set_subject_number(N_SUBJECT, N_TRIAL, data_dir)
 # experiment_type -- todo put in choice function
+
+p = load_validate_experimental_parameters(data_dir)
+
+touch_sensor, servo = initialise_sensors(p["SENSITIVITY"], p["SERVO_CHANNEL"], Rpi=RPI_MODE)
+subject_name, session_number = set_subject_number(p["N_TRIAL"], data_dir)
 experiment_type = choose_experiment_type()
-if not confirm_experiment_details(subject_name, session_number, experiment_type, N_TRIAL):
+if not confirm_experiment_details(subject_name, session_number, experiment_type, p["N_TRIAL"]):
     sys.exit()
+log_file, measurement_file, initial_delay = initialise_experiment(subject_name, p["INITIAL_DELAY"], experiment_type)
+log_event(f"Subject {subject_name} - Session {session_number} started...", data_dir, log_file)
+log_trial_parameters(p, data_dir, log_file)
 
-log_file, measurement_file, initial_delay = initialise_experiment(subject_name)
 
-log_event(data_dir, log_file, f"Subject {subject_name} - Session {session_number} started...")
 
 # Initialise key tracking variables
 
@@ -192,17 +173,17 @@ is_touch_active = True
 # Example of logging a measurement quantity
 
 log_event(
+    f"Last touch time: {last_touch_time}",
     data_dir,
     log_file,
-    f"Last touch time: {last_touch_time}",
     log_as_measurement=True,
     echo_to_console=False,
 )
 
 log_event(
+    f"Waiting for {initial_delay} seconds before starting the first sequence...",
     data_dir,
     log_file,
-    f"Waiting for {initial_delay} seconds before starting the first sequence...",
 )
 
 # Wait for button press to start the experiment
@@ -222,9 +203,9 @@ try:
 
     while touch_count < N_TOUCH and not is_button_pressed:  # Adjust the number of touches as needed
         # Print the current sequence number
-        log_event(data_dir, log_file, f"Current sequence: {sequence_number}")
+        log_event(f"Current sequence: {sequence_number}", data_dir, log_file)
         play_wav_file("start", duration_sec=2, tone_dir=tone_dir)
-        log_event(data_dir, log_file, "Start tone played")
+        log_event("Start tone played", data_dir, log_file)
 
         while True:
             if not RPI_MODE:
@@ -236,14 +217,14 @@ try:
                 status = touch_sensor.read()
 
                 if status[1] > 0 or status[2] > 0 or status[3] > 0:
-                    log_event(data_dir, log_file, "Touch-pad status read")
+                    log_event("Touch-pad status read", data_dir, log_file)
                     time.sleep(TOUCH_PAD_DELAY)
                     play_wav_file("correct", duration_sec=2, tone_dir=tone_dir)
                     time.sleep(SERVO_DELAY)
 
                     # Control the servo motor
                     servo.angle = SERVO_OPEN
-                    log_event(data_dir, log_file, "Feed dispensed")
+                    log_event("Feed dispensed", data_dir, log_file)
                     time.sleep(SERVO_DELAY_AFTER_FEED)  # Delay operation of servo
                     servo.angle = SERVO_CLOSE
 
@@ -254,9 +235,9 @@ try:
                     last_touch_time = time.time()
 
                     log_event(
+                        f"{last_touch_time}",
                         data_dir,
                         log_file,
-                        f"{last_touch_time}",
                         log_as_measurement=True,
                         echo_to_console=False,
                     )
@@ -270,13 +251,13 @@ try:
                         # Make a different sound after n registered touches
                         play_wav_file("end", duration_sec=3, tone_dir=tone_dir)
                         touch_count = 0  # CH: Reset touch count after the session ends -- probs not needed - reset each time at start of loop
-                        log_event(data_dir, log_file, "Session ended")
+                        log_event("Session ended", data_dir, log_file)
                         sys.exit()  # Terminate the script
                     break
 
         sequence_number += 1  # Increment the sequence number ## CHECK: Get sequence/trial language consistent
 
 except KeyboardInterrupt:
-    log_event(data_dir, log_file, "Keyboard interrupt - exiting...")
+    log_event("Keyboard interrupt - exiting...", data_dir, log_file)
     if RPI_MODE:
         servo.release()
