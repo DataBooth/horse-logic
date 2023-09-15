@@ -116,7 +116,8 @@ try:
 
                     # begin next trial
                     trial_number += 1
-                    print(f"Current trial: {trial_number}")
+                    #print(f"Current trial: {trial_number}")
+                    log_event(f"Current trial: {trial_number}", data_dir, log_file)
                     play_WAV(wav.startTone, 1)
                     start_tone_played = True
                     start_tone_time = datetime.now()
@@ -126,8 +127,7 @@ try:
                     # waiting for either a touch or the blue button
                     while True:
                         start_tone_time = start_tone_time + listenForPause(
-                            red_button, False, blue_button, touchSensor, trialPaused, trialRestarted  #TODO: Not sure what these arguments are?
-                        )
+                            red_button, False, blue_button, touchSensor)
 
                         # elapsed = elapsed_seconds(start_tone_time)
                         # print(f"Session type {session_type} - elapsed {elapsed}")

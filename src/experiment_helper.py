@@ -6,6 +6,7 @@ import time
 import pygame
 import sys
 import pprint
+import experiment_sounds as wav
 
 try:
     from PiicoDev_CAP1203 import PiicoDev_CAP1203
@@ -92,16 +93,16 @@ def elapsed_seconds(start_time):
     return duration_since_start
 
 
-def listenForPause(red_button, logTouches, blue_button, touchSensor, trialPausedWav, trialRestartedWav):
+def listenForPause(red_button, logTouches, blue_button, touchSensor):
     if red_button.is_pressed():
         pauseTime = datetime.now()
         # Process pause
         print(f"Process paused at: {datetime.now()}, Session paused")
-        play_WAV(trialPausedWav, 1)
+        play_WAV(wav.trialPaused, 1)
         while True:
             if red_button.is_pressed():
                 print(f"Process resumed at: {datetime.now()}, Session resumed")
-                play_WAV(trialRestartedWav, 1)
+                play_WAV(wav.trialRestarted, 1)
                 return timedelta(0, elapsed_seconds(pauseTime))
     if logTouches:
         if blue_button.is_pressed():
