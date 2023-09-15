@@ -276,6 +276,25 @@ def set_directory(dir_name):
 
 
 def create_output_filenames(subject_name, session_number, session_type):
+    """
+    Generate the names for the log file and measurement file based on the subject name, session number, and session type.
+
+    Args:
+        subject_name (str): The name of the subject.
+        session_number (int): The number of the session.
+        session_type (str): The type of the session.
+
+    Returns:
+        tuple: A tuple containing the name of the log file and the name of the measurement file.
+
+    Example:
+        subject_name = "John"
+        session_number = 1
+        session_type = "preliminary"
+        log_file, measurement_file = create_output_filenames(subject_name, session_number, session_type)
+        print(log_file)  # Output: Experiment_2022-01-01T12:00:00_John_1_preliminary.log
+        print(measurement_file)  # Output: Experiment_2022-01-01T12:00:00_John_1_preliminary.dat
+    """
     LOGFILE_PREFIX = "Experiment"
     file_name = f"{LOGFILE_PREFIX}_{datetime.now().isoformat()}_{subject_name}_{session_number}_{session_type}"
     return f"{file_name}.log", f"{file_name}.dat"
