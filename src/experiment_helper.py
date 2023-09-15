@@ -324,6 +324,17 @@ def log_event(
 
 
 def log_trial_parameters(parameters, data_dir, log_file):
+    """
+    Logs the trial parameters by writing them to a log file.
+
+    Args:
+        parameters (any type): The trial parameters to be logged.
+        data_dir (str): The directory where the log file will be stored.
+        log_file (str): The name of the log file.
+
+    Returns:
+        None
+    """
     pformatted = pprint.pformat(parameters)
     with open(Path(data_dir) / log_file, "a") as f:
         f.write(f"PARAMETERS:\n{pformatted}\n")
@@ -332,6 +343,19 @@ def log_trial_parameters(parameters, data_dir, log_file):
 
 
 def set_subject_name(data_dir):
+    """
+    Prompts the user to enter the subject name and retrieves the next session number for that subject from a tracking file.
+
+    Args:
+        data_dir (str): The directory where the tracking file is located.
+
+    Returns:
+        tuple: A tuple containing the subject name (str), the next session number (int), and the updated tracking file as a DataFrame.
+
+    Example:
+        subject_name, next_session_number, experiment_subjects_df = set_subject_name(data_dir)
+    """
+
     subject_name = False
     print("\nStarting experiment:")
     print("\n  Press Ctrl-C to exit the experiment\n")
@@ -344,6 +368,20 @@ def set_subject_name(data_dir):
 
 
 def get_next_session_number(subject_name, data_dir, subjects_file="experiment_subjects.xlsx"):
+    """
+    Retrieves the next session number for a given subject name from a tracking file.
+
+    Args:
+        subject_name (str): The name of the subject for which to retrieve the next session number.
+        data_dir (str): The directory where the tracking file is located.
+        subjects_file (str, optional): The name of the tracking file. Default is "experiment_subjects.xlsx".
+
+    Returns:
+        tuple: A tuple containing the subject name, the next session number, and the updated tracking file as a DataFrame.
+
+    Raises:
+        FileNotFoundError: If the tracking file does not exist in the specified directory.
+    """
     if not (Path(data_dir) / subjects_file).exists():
         raise FileNotFoundError(f"Tracking file {Path(data_dir) / subjects_file} does not exist.")
     # Read in the tracking file
@@ -371,6 +409,24 @@ def get_next_session_number(subject_name, data_dir, subjects_file="experiment_su
 
 
 def update_subjects_xlsx(data_dir, experiment_subjects_df, subjects_file):
+    """
+    Update an Excel file containing information about experiment subjects.
+
+    Args:
+        data_dir (str): The directory where the experiment data is stored.
+        experiment_subjects_df (DataFrame): A DataFrame containing information about the experiment subjects.
+        subjects_file (str): The name of the Excel file that stores the subjects' information.
+
+    Returns:
+        None
+
+    Example Usage:
+        update_subjects_xlsx(data_dir, experiment_subjects_df, "experiment_subjects.xlsx")
+
+    This code updates the "experiment_subjects.xlsx" file in the `data_dir` directory
+    with the information in the `experiment_subjects_df` DataFrame.
+    It removes a column from the DataFrame and saves the updated DataFrame to the Excel file.
+    """
     experiment_subjects_df.drop(columns=["subject_name_clean"], inplace=True)
     experiment_subjects_df.to_excel(Path(data_dir) / subjects_file, index=False)
     return None
