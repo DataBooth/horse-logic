@@ -1,6 +1,6 @@
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import experiment_sounds as wav
 from experiment_helper import (
@@ -8,12 +8,77 @@ from experiment_helper import (
     Servo_pellets,
     elapsed_seconds,
     initialise_GPIO_buttons,
-    listenForPause,
     log_event,
-    pausable_sleep,
     play_WAV,
     setup_experiment,
 )
+
+
+## Local functions
+
+
+def listenForPause(red_button, logTouches, blue_button, touchSensor):
+    """
+    Check if the red button is pressed. If pressed, log the pause event, play a sound,
+    and enter a loop until the red button is pressed again.
+    If the blue button or touch sensor is pressed, log the corresponding event and
+    wait for a short period of time.
+    Return the duration of the pause as a timedelta object.
+
+    Args:
+        red_button (object): An object representing the red button.
+        logTouches (bool): A boolean indicating whether to log touch events.
+        blue_button (object): An object representing the blue button.
+        touchSensor (object): An object representing the touch sensor.
+
+    Returns:
+        timedelta: A timedelta object representing the duration of the pause.
+    """
+    if red_button.is_pressed():
+        pauseTime = datetime.now()
+        # Process pause
+        # print(f"Process paused at: {datetime.now()}, Session paused")
+        log_event("Process paused", data_dir, log_file)
+
+        play_WAV(wav.trialPaused, 1)
+        while True:
+            if red_button.is_pressed():
+                # print(f"Process resumed at: {datetime.now()}, Session resumed")
+                log_event("Process resumed", data_dir, log_file)
+                play_WAV(wav.trialRestarted, 1)
+                return timedelta(0, elapsed_seconds(pauseTime))
+    if logTouches:
+        if blue_button.is_pressed():
+            # print(f"Manual touch recorded during sleep at: {datetime.now()}, Session under manual control")
+            log_event("Manual touch recorded - Session under manual control", data_dir, log_file)
+            time.sleep(0.5)
+        status = touchSensor.read()
+        if status[1] > 0 or status[2] > 0 or status[3] > 0:
+            # print(f"Touch-pad status read during sleep at: {datetime.now()}")
+            log_event("Touch-pad status read during sleep", data_dir, log_file)
+            time.sleep(0.5)
+    return timedelta(0, 0)
+
+
+# need a description of what this is and what it does?
+def pausable_sleep(duration_seconds, logTouches):
+    """
+    Pause and resume a sleep operation.
+
+    Args:
+        duration_seconds (float): The duration in seconds for the sleep operation.
+        logTouches (bool): A flag indicating whether to log touches during the sleep operation.
+
+    Returns:
+        timedelta: The total elapsed time during the sleep operation.
+    """
+    start_time = datetime.now()
+    elapsed = elapsed_seconds(start_time)
+    while elapsed < duration_seconds:
+        listenForPause(logTouches)
+        elapsed = elapsed_seconds(start_time)
+    return timedelta(0, elapsed)
+
 
 #### Start of experiment ####
 
@@ -65,7 +130,7 @@ last_touch_time = time.time()
 is_touch_active = True
 green_button_press_count = 0
 blue_button_press_count = 0
-last_green_press_time = time.time()  #MJB: currently unused
+last_green_press_time = time.time()  # MJB: currently unused
 last_blue_press_time = time.time()
 
 start_tone_played = False
@@ -196,7 +261,7 @@ try:
 
                                 if touch_count == trialLimit:
                                     play_WAV(wav.sessionTerminated, 3.5)
-                                    #print(f"Session ended at: {datetime.now()}")
+                                    # print(f"Session ended at: {datetime.now()}")
                                     log_event("Session ended", data_dir, log_file)
                                     sys.exit()
 

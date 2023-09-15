@@ -2,10 +2,9 @@ import pprint
 import sys
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
-import experiment_sounds as wav
 import pandas as pd
 import pygame
 
@@ -21,12 +20,15 @@ except ImportError:
 DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # CH: Hard-coded example only
 
 
-def initialise_directories():
+def initialise_data_dir():
     """
-    Initialises the data and tone directories.
+    Initialises the data directory.
+
+    This function initialises the data directory by calling the `set_directory` function
+    with the `DATA_DIR` variable as the argument.
 
     Returns:
-    - data_dir: The initialised data directory
+        str: The path to the data directory.
     """
     data_dir = set_directory(DATA_DIR)
     return data_dir
@@ -34,10 +36,29 @@ def initialise_directories():
 
 # Define Servo objects for different types of feed. Can adjust the angles and times if needed
 class Servo_pellets:
+    """
+    A class that controls a servo motor to dispense feed pellets.
+
+    Attributes:
+        servo (object): The servo object used for controlling the servo motor.
+    """
+
     def __init__(self, servo):
+        """
+        Initialises a Servo_pellets object.
+
+        Args:
+            servo (object): The servo object used for controlling the servo motor.
+        """
         self.servo = servo
 
     def dispense_feed_pellets(self):
+        """
+        Controls the servo motor to dispense feed pellets.
+
+        This method sets the servo angle to 80 degrees to dispense the pellets,
+        and then sets it back to 0 degrees to stop the dispensing.
+        """
         self.servo.angle = 80
         # print(f"Feed dispensed at: {datetime.now()}") - logging this in the main code
         time.sleep(0.5)
@@ -45,10 +66,34 @@ class Servo_pellets:
 
 
 class Servo_grain:
+    """
+    A class that controls a servo motor to dispense feed grain.
+
+    Args:
+        servo: The servo object used for controlling the servo motor.
+
+    Example Usage:
+        servo = Servo()
+        grain_dispenser = Servo_grain(servo)
+        grain_dispenser.dispense_feed_grain()
+    """
+
     def __init__(self, servo):
+        """
+        Initialises the Servo_grain object with a servo object.
+
+        Args:
+            servo: The servo object used for controlling the servo motor.
+        """
         self.servo = servo
 
     def dispense_feed_grain(self):
+        """
+        Controls the servo motor to dispense feed grain.
+
+        The servo angle is set to 70 degrees to dispense the grain,
+        and then set back to 0 degrees to stop the dispensing.
+        """
         self.servo.angle = 70
         # print(f"Feed dispensed at: {datetime.now()}") - logging this in the main code
         time.sleep(0.5)
@@ -56,25 +101,58 @@ class Servo_grain:
 
 
 class Button:
+    """
+    A class representing a button connected to a Raspberry Pi GPIO pin.
+
+    Attributes:
+        pin (int): The GPIO pin number to which the button is connected.
+
+    Methods:
+        __init__(self, pin):
+            Initialises a Button object with the specified GPIO pin. Sets up the GPIO pin as an input with a pull-up resistor.
+
+        is_pressed(self):
+            Returns True if the button is pressed (GPIO pin is low), otherwise returns False.
+    """
+
     def __init__(self, pin):
+        """
+        Initialises a Button object with the specified GPIO pin. Sets up the GPIO pin as an input with a pull-up resistor.
+
+        Args:
+            pin (int): The GPIO pin number to which the button is connected.
+        """
         self.pin = pin
         GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     def is_pressed(self):
+        """
+        Returns True if the button is pressed (GPIO pin is low), otherwise returns False.
+        """
         return GPIO.input(self.pin) == GPIO.LOW
 
 
 def initialise_GPIO_buttons(RPi=RPI_MODE):
+    """
+    Initialises GPIO pins for buttons on a Raspberry Pi.
+
+    Args:
+        RPi (bool, optional): A boolean indicating whether the code is running on a Raspberry Pi or not.
+                              Default is RPI_MODE which is set to False if the RPi.GPIO module is not imported.
+
+    Returns:
+        tuple: A tuple containing the GPIO object and instances of the Button class for each button if the code is running on a Raspberry Pi.
+               If the code is not running on a Raspberry Pi, it returns None for all the variables.
+    """
+
     if RPi:
         # Set up GPIO pins for buttons
-
         GPIO.setmode(GPIO.BCM)
         butpin_green = 6  # Green button
         butpin_blue = 7  # Blue button
         butpin_red = 12  # Red button
 
         # Set up GPIO pins for input with an internal pull-up resistor
-
         GPIO.setup(butpin_green, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(butpin_blue, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(butpin_red, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -89,45 +167,36 @@ def initialise_GPIO_buttons(RPi=RPI_MODE):
 
 # need a description of what this is?
 def elapsed_seconds(start_time):
+    """
+    Calculate the duration in seconds between the current time and a given start time.
+
+    Args:
+        start_time (datetime): A datetime object representing the start time.
+
+    Returns:
+        float: The duration in seconds between the current time and the start_time.
+    """
     delta_since_start = datetime.now() - start_time
     duration_since_start = delta_since_start.total_seconds()
     return duration_since_start
 
 
-def listenForPause(red_button, logTouches, blue_button, touchSensor):
-    if red_button.is_pressed():
-        pauseTime = datetime.now()
-        # Process pause
-        print(f"Process paused at: {datetime.now()}, Session paused")
-        play_WAV(wav.trialPaused, 1)
-        while True:
-            if red_button.is_pressed():
-                print(f"Process resumed at: {datetime.now()}, Session resumed")
-                play_WAV(wav.trialRestarted, 1)
-                return timedelta(0, elapsed_seconds(pauseTime))
-    if logTouches:
-        if blue_button.is_pressed():
-            print(f"Manual touch recorded during sleep at: {datetime.now()}, Session under manual control")
-            time.sleep(0.5)
-        status = touchSensor.read()
-        if status[1] > 0 or status[2] > 0 or status[3] > 0:
-            print(f"Touch-pad status read during sleep at: {datetime.now()}")
-            time.sleep(0.5)
-    return timedelta(0, 0)
-
-
-# need a description of what this is and what it does?
-def pausable_sleep(duration_seconds, logTouches):
-    start_time = datetime.now()
-    elapsed = elapsed_seconds(start_time)
-    while elapsed < duration_seconds:
-        listenForPause(logTouches)
-        elapsed = elapsed_seconds(start_time)
-    return timedelta(0, elapsed)
-
-
 # Function to play WAV file for a specified duration
 def play_WAV(file_path, duration):
+    """
+    Play a WAV audio file for a specified duration.
+
+    Args:
+        file_path (str): The path to the WAV audio file.
+        duration (float): The duration in seconds for which the audio should be played.
+
+    Returns:
+        None
+
+    Example:
+        play_WAV('audio.wav', 2)
+        This code will play the 'audio.wav' file for 2 seconds.
+    """
     sound = pygame.mixer.Sound(file_path)
     sound.play()
     pygame.time.delay(int(duration * 1000))
@@ -154,7 +223,7 @@ def initialise_servo(servo_channel):
     Initialises a servo motor.
 
     Args:
-        servo_channel (int, optional): The channel number of the servo motor. Default is SERVO_CHANNEL.
+        servo_channel (int, optional): The channel number of the servo motor.
 
     Returns:
         PiicoDev_Servo: The initialised servo motor object.
@@ -166,18 +235,16 @@ def initialise_servo(servo_channel):
 
 def initialise_sensors(sensitivity, servo_channel, RPi=RPI_MODE):
     """
-    Initialises the sensors based on the given parameters.
+    Initialise the touch sensor and servo motor based on the given sensitivity and servo channel.
 
     Args:
-        sensitivity (int, optional): The sensitivity level of the touch sensor. Default is 4.
-        RPi (bool, optional): A boolean flag indicating whether the code is running on a Raspberry Pi. Default is False.
+        sensitivity (int): The sensitivity level of the touch sensor.
+        servo_channel (int): The channel number of the servo motor.
+        RPi (bool, optional): Indicates if the code is running on a Raspberry Pi. Defaults to RPI_MODE.
 
     Returns:
-        tuple: A tuple containing the initialised touch sensor and servo objects.
-
-    Example:
-        touch_sensor, servo = initialise_sensors(sensitivity=4, RPi=True)
-
+        tuple: A tuple containing the initialised touch sensor and servo motor objects.
+               If not running on a Raspberry Pi, returns (None, None).
     """
     if RPi:
         touch_sensor = initialise_touch_sensor(sensitivity)
@@ -189,19 +256,17 @@ def initialise_sensors(sensitivity, servo_channel, RPi=RPI_MODE):
 
 def set_directory(dir_name):
     """
-    Check if a directory with the given name exists.
+    Check if the input directory exists and return a Path object representing the directory.
 
     Args:
         dir_name (str or Path): The name or path of the directory to be checked.
 
+    Returns:
+        Path: The Path object representing the input directory.
+
     Raises:
         TypeError: If dir_name is not a string or a Path object.
-        FileNotFoundError: If the directory doesn't exist.
-
-    Example:
-        set_directory('my_directory')
-        In this example, the function is called with the directory name 'my_directory'.
-        If the directory doesn't exist, a FileNotFoundError exception will be raised.
+        FileNotFoundError: If the specified directory does not exist.
     """
     if not isinstance(dir_name, (str, Path)):
         raise TypeError("dir_name must be a string or a Path object.")
@@ -211,20 +276,6 @@ def set_directory(dir_name):
 
 
 def create_output_filenames(subject_name, session_number, session_type):
-    """
-    Generate output filenames for an experiment log file and a data file.
-
-    Args:
-        subject_number (int): The number of the subject for which the filenames are being created.
-
-    Returns:
-        tuple: A tuple containing the log filename and the data filename, both based on the current date and time, and the subject number.
-
-    Example:
-        filenames = create_output_filenames(10)
-        print(filenames)
-        # Output: ('Experiment_2022-01-01T12:00:00_Subject_10.log', 'Experiment_2022-01-01T12:00:00_Subject_10.dat')
-    """
     LOGFILE_PREFIX = "Experiment"
     file_name = f"{LOGFILE_PREFIX}_{datetime.now().isoformat()}_{subject_name}_{session_number}_{session_type}"
     return f"{file_name}.log", f"{file_name}.dat"
@@ -238,25 +289,6 @@ def log_event(
     event_time=None,
     echo_to_console=True,
 ):
-    """
-    Log the event name and time to a file.
-
-    Args:
-        data_dir (str): The directory where the log/measurement file(s) will be stored.
-        log_file (str): The name of the log file. The measurement file will have the same name, but with a .dat extension.
-        event_name (str): The name/text of the event to be logged.
-        log_as_measurement (bool, optional): If True, the event will also be logged as a measurement in a separate file. Default is False.
-        event_time (str, optional): The timestamp of the event. If not provided, the current timestamp will be used.
-        echo_to_console (bool, optional): If True, the log will be echoed to the console. Default is True.
-
-    Returns:
-        None
-
-    Example:
-        log_event("data", "log.txt", "Event 1")
-        This example logs "Event 1" with the current timestamp to the file "log.txt" in the "data" directory.
-    """
-
     if not Path(data_dir).exists():
         raise FileNotFoundError(f"Data directory {data_dir} does not exist.")
     if event_time is None:
@@ -432,7 +464,7 @@ def load_validate_experiment_parameters(data_dir, parameters_xlsx="experiment_pa
 
 def setup_experiment(data_dir=DATA_DIR):
     pygame.mixer.init()  # Initialise the mixer module for playing WAV files
-    data_dir = initialise_directories()
+    data_dir = initialise_data_dir()
     p = load_validate_experiment_parameters(data_dir)
     touchSensor, servo = initialise_sensors(p["SENSITIVITY"], p["SERVO_CHANNEL"])
     subject_name, session_number, experiment_subjects_df = set_subject_name(data_dir)
