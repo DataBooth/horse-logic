@@ -4,6 +4,7 @@ import pandas as pd
 from dataclasses import dataclass
 import time
 import pygame
+import sys
 
 try:
     from PiicoDev_CAP1203 import PiicoDev_CAP1203
@@ -15,20 +16,16 @@ except ImportError:
 
 
 DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # CH: Hard-coded example only
-TONE_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/src/tones"  # CH: example only
-
 
 def initialise_directories():
     """
     Initialises the data and tone directories.
 
     Returns:
-    - data_dir: The initialized data directory.
-    - tone_dir: The initialized tone directory.
+    - data_dir: The initialised data directory
     """
     data_dir = set_directory(DATA_DIR)
-    tone_dir = set_directory(TONE_DIR)
-    return data_dir, tone_dir
+    return data_dir
 
 
 # Define Servo objects for different types of feed. Can adjust the angles and times if needed
@@ -53,8 +50,15 @@ class Servo_grain:
         time.sleep(0.5)
         self.servo.angle = 0
 
+class Button:
+    def __init__(self, pin):
+        self.pin = pin
+        GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-def initialise_GPIO():
+    def is_pressed(self):
+        return GPIO.input(self.pin) == GPIO.LOW
+
+def initialise_GPIO_buttons():
     # Set up GPIO pins for buttons
 
     GPIO.setmode(GPIO.BCM)
@@ -67,16 +71,12 @@ def initialise_GPIO():
     GPIO.setup(butpin_green, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(butpin_blue, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(butpin_red, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    return GPIO, butpin_green, butpin_blue, butpin_red
 
+    green_button = Button(butpin_green)
+    blue_button = Button(butpin_blue)
+    red_button = Button(butpin_red)
+    return GPIO, green_button, blue_button, red_button
 
-class Button:
-    def __init__(self, pin):
-        self.pin = pin
-        GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-    def is_pressed(self):
-        return GPIO.input(self.pin) == GPIO.LOW
 
 
 # need a description of what this is?
@@ -125,27 +125,6 @@ def play_WAV(file_path, duration):
     pygame.time.delay(int(duration * 1000))
     time.sleep(duration)
     sound.stop()
-
-
-def initialise_experiment(subject_name, initial_delay, experiment_type, data_dir, session_number):
-    """
-    Initialises the experiment by generating output filenames, and logging important information.
-
-    Args:
-        subject_number (int): The number of the subject for which the experiment is being initialised.
-        initial_delay (int, optional): The initial delay in seconds before the experiment starts. Default is 10 seconds.
-
-    Returns:
-        tuple: A tuple containing the following elements:
-            - log_file (str): The name of the log file.
-            - measurement_file (str): The name of the measurement file.
-            - initial_delay (int): The initial delay in seconds before the experiment starts.
-    """
-    log_file, measurement_file = create_output_filenames(subject_name, session_number, experiment_type)
-    log_event(f"Data directory: {data_dir}", data_dir, log_file)
-    log_event(f"Log file: {log_file}", data_dir, log_file)
-    log_event(f"Measurement file: {measurement_file}", data_dir, log_file)
-    return log_file, measurement_file, initial_delay
 
 
 def initialise_touch_sensor(sensitivity):
@@ -223,7 +202,7 @@ def set_directory(dir_name):
     return Path(dir_name)
 
 
-def create_output_filenames(subject_name, session_number, experiment_type):
+def create_output_filenames(subject_name, session_number, session_type):
     """
     Generate output filenames for an experiment log file and a data file.
 
@@ -239,7 +218,7 @@ def create_output_filenames(subject_name, session_number, experiment_type):
         # Output: ('Experiment_2022-01-01T12:00:00_Subject_10.log', 'Experiment_2022-01-01T12:00:00_Subject_10.dat')
     """
     LOGFILE_PREFIX = "Experiment"
-    file_name = f"{LOGFILE_PREFIX}_{datetime.now().isoformat()}_{subject_name}_{session_number}_{experiment_type}"
+    file_name = f"{LOGFILE_PREFIX}_{datetime.now().isoformat()}_{subject_name}_{session_number}_{session_type}"
     return f"{file_name}.log", f"{file_name}.dat"
 
 
@@ -293,50 +272,40 @@ def log_trial_parameters(parameters, data_dir, log_file):
     return None
 
 
-def set_subject_number(N_TRIAL, data_dir):
-    subject_name = 0
+def set_subject_name(data_dir):
+    subject_name = False
     print("\nStarting experiment:")
     print("\n  Press Ctrl-C to exit the experiment\n")
-    print("  Ensure the subject is settled in the stall:")
-    print(
-        f"   - Commencing the experiment with {N_TRIAL} trials..."
-    )  # May be to adjust for various types of experiments
+    print("  Ensure the subject is settled and ready for the experiment\n")
 
-    while subject_name == 0:
-        try:
-            subject_name = input("\nEnter subject name: ")
-        except ValueError:
-            subject_name = 0
-        subject_name, next_session_number = get_next_session_number(subject_name, data_dir)
+    while not subject_name:
+        subject_name_in = input("\nEnter subject name: ")
+        subject_name, next_session_number = get_next_session_number(subject_name_in, data_dir)
     return subject_name, next_session_number
 
 
-def get_next_session_number(subject_name, data_dir, tracking_file="experiment_tracking.xlsx"):
-    if not (Path(data_dir) / tracking_file).exists():
-        raise FileNotFoundError(f"Tracking file {Path(data_dir) / tracking_file} does not exist.")
+def get_next_session_number(subject_name, data_dir, subjects_file="experiment_subjects.xlsx"):
+    if not (Path(data_dir) / subjects_file).exists():
+        raise FileNotFoundError(f"Tracking file {Path(data_dir) / subjects_file} does not exist.")
     # Read in the tracking file
-    experiment_tracking_df = pd.read_excel(Path(data_dir) / tracking_file)
-    experiment_tracking_df["subject_name_clean"] = experiment_tracking_df["subject_name"].apply(
+    experiment_subjects_df = pd.read_excel(Path(data_dir) / subjects_file)
+    experiment_subjects_df["subject_name_clean"] = experiment_subjects_df["subject_name"].apply(
         lambda name: name.lower().replace(" ", "")
     )
-    subject_names = [name.lower() for name in experiment_tracking_df["subject_name"].values.tolist()]
+    subject_names = [name.lower() for name in experiment_subjects_df["subject_name"].values.tolist()]
     # Amend to allow for subject names with spaces
     subject_names = [name.replace(" ", "") for name in subject_names]
     if subject_name.lower().replace(" ", "") not in subject_names:
-        print(f"Subject {subject_name} not found in tracking file.\nSee {(Path(data_dir) / tracking_file).as_posix()}.")
-        return 0, 0
-    next_session_number = (
-        experiment_tracking_df["subject_name_clean"]
-        .str.contains(subject_name.lower().replace(" ", ""), case=False)
-        .values[0]
-        + 1
-    )
-    experiment_tracking_df.loc[
-        experiment_tracking_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False),
+        print(f"Subject {subject_name} not found in tracking file.\nSee {(Path(data_dir) / subjects_file).as_posix()}.")
+        return False, 0
+    next_session_number = experiment_subjects_df[experiment_subjects_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False)]["last_session_number"].values[0] + 1
+    experiment_subjects_df.loc[
+        experiment_subjects_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False),
         "last_session_number",
     ] = next_session_number
     # Update the tracking file with the next session number for the given subject (subject_name)
-    experiment_tracking_df.to_excel(Path(data_dir) / tracking_file, index=False)
+    experiment_subjects_df.drop(columns=["subject_name_clean"], inplace=True)
+    experiment_subjects_df.to_excel(Path(data_dir) / subjects_file, index=False)
     return subject_name, next_session_number
 
 
@@ -369,27 +338,26 @@ def choose_session_type():
         except ValueError:
             session_choice = 0
     session_type = session_types[session_choice - 1]
+    print()
     return session_type
 
 
-def confirm_experiment_details(subject_name, session_number, experiment_type, N_TRIAL):
+def confirm_experiment_details(subject_name, session_number, session_type):
     """
     Confirms the experiment details with the user.
 
     Args:
         subject_name (str): The name of the subject.
         session_number (int): The session number.
-        experiment_type (str): The type of experiment.
-        N_TRIAL (int): The number of trials.
+        session_type (str): The type of experiment.
 
     Returns:
         True if the user confirms the experiment details are correct, False otherwise.
     """
     print(f"\nSubject name: {subject_name}")
     print(f"Session number: {session_number}")
-    print(f"Experiment type: {experiment_type}")
-    print(f"Number of trials: {N_TRIAL}")
-    confirm = input("\Are experiment details ok (y - continue / n - exit): ")
+    print(f"Experiment type: {session_type}")
+    confirm = input("\nAre the details ok for this session (Y - continue / N - exit)?: ")
     if confirm.lower()[0] != "y":
         return False
     else:
@@ -413,8 +381,8 @@ def parse_text_for_na(value):
         return value
 
 
-def get_parameter(name, experimental_parameters_df):
-    row = experimental_parameters_df.loc[experimental_parameters_df["name"] == name]
+def get_parameter(name, experiment_parameters_df):
+    row = experiment_parameters_df.loc[experiment_parameters_df["name"] == name]
     if row.drop(columns=["name"]).isnull().values.all():
         return None
     return Parameter(
@@ -427,13 +395,13 @@ def get_parameter(name, experimental_parameters_df):
     )
 
 
-def load_validate_experimental_parameters(data_dir, parameters_xlsx="experimental_parameters.xlsx"):
+def load_validate_experiment_parameters(data_dir, parameters_xlsx="experiment_parameters.xlsx"):
     if not Path(data_dir / parameters_xlsx).exists():
         raise FileNotFoundError(f"{parameters_xlsx} does not exist")
-    experimental_parameters_df = pd.read_excel(Path(data_dir / parameters_xlsx))
+    experiment_parameters_df = pd.read_excel(Path(data_dir / parameters_xlsx))
     par = {}
-    for name in experimental_parameters_df["name"]:
-        parameter = get_parameter(name, experimental_parameters_df)
+    for name in experiment_parameters_df["name"]:
+        parameter = get_parameter(name, experiment_parameters_df)
         if parameter is not None:
             # check if parameter is numeric
             if isinstance(parameter.val, (int, float)):
@@ -444,3 +412,20 @@ def load_validate_experimental_parameters(data_dir, parameters_xlsx="experimenta
                 print(f"{parameter.name} is not numeric: {parameter.val}")
             par[name] = parameter.val
     return par
+
+def setup_experiment(data_dir=DATA_DIR):
+    pygame.mixer.init()  # Initialise the mixer module for playing WAV files
+    data_dir = initialise_directories()
+    p = load_validate_experiment_parameters(data_dir)
+    touchSensor, servo = initialise_sensors(p["SENSITIVITY"], p["SERVO_CHANNEL"])
+    subject_name, session_number = set_subject_name(data_dir)
+    session_type = choose_session_type()
+    if not confirm_experiment_details(subject_name, session_number, session_type):
+        sys.exit()
+    log_file, measurement_file = create_output_filenames(subject_name, session_number, session_type)
+    log_event(f"Data directory: {data_dir}", data_dir, log_file)
+    log_event(f"Log file: {log_file}", data_dir, log_file)
+    log_event(f"Measurement file: {measurement_file}", data_dir, log_file)
+    log_event(f"Subject {subject_name} - Session {session_number} started...", data_dir, log_file)
+    log_trial_parameters(p, data_dir, log_file)
+    return subject_name, session_number, session_type, p, touchSensor, servo, data_dir, log_file, measurement_file
