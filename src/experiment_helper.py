@@ -1,17 +1,18 @@
+import pprint
+import sys
+import time
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-import pandas as pd
-from dataclasses import dataclass
-import time
-import pygame
-import sys
-import pprint
+
 import experiment_sounds as wav
+import pandas as pd
+import pygame
 
 try:
+    import RPi.GPIO as GPIO
     from PiicoDev_CAP1203 import PiicoDev_CAP1203
     from PiicoDev_Servo import PiicoDev_Servo, PiicoDev_Servo_Driver
-    import RPi.GPIO as GPIO
 except ImportError:
     RPI_MODE = False
     print("\n**** Running in non-RPi mode for testing only ****\n")
@@ -38,7 +39,7 @@ class Servo_pellets:
 
     def dispense_feed_pellets(self):
         self.servo.angle = 80
-        print(f"Feed dispensed at: {datetime.now()}")
+        # print(f"Feed dispensed at: {datetime.now()}") - logging this in the main code
         time.sleep(0.5)
         self.servo.angle = 0
 
@@ -49,7 +50,7 @@ class Servo_grain:
 
     def dispense_feed_grain(self):
         self.servo.angle = 70
-        print(f"Feed dispensed at: {datetime.now()}")
+        # print(f"Feed dispensed at: {datetime.now()}") - logging this in the main code
         time.sleep(0.5)
         self.servo.angle = 0
 
