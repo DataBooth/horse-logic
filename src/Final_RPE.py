@@ -74,6 +74,8 @@ start_tone_played = False
 
 try:
     trial_number = 0
+    if touchSensor is None:  # MJB testing mode
+        sys.exit("Exiting test mode - not running on Raspberry Pi\n")
 
     while True:
         if green_button.is_pressed():
@@ -124,7 +126,7 @@ try:
                     # waiting for either a touch or the blue button
                     while True:
                         start_tone_time = start_tone_time + listenForPause(
-                            red_button, False, blue_button, touchSensor, trialPaused, trialRestarted
+                            red_button, False, blue_button, touchSensor, trialPaused, trialRestarted  #TODO: Not sure what these arguments are?
                         )
 
                         # elapsed = elapsed_seconds(start_tone_time)

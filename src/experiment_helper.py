@@ -303,7 +303,7 @@ def get_next_session_number(subject_name, data_dir, subjects_file="experiment_su
     subject_names = [name.replace(" ", "") for name in subject_names]
     if subject_name.lower().replace(" ", "") not in subject_names:
         print(f"Subject {subject_name} not found in tracking file.\nSee {(Path(data_dir) / subjects_file).as_posix()}.")
-        return False, 0
+        return False, 0, 0
     next_session_number = (
         experiment_subjects_df[
             experiment_subjects_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False)
@@ -371,7 +371,7 @@ def confirm_experiment_details(subject_name, session_number, session_type):
     print(f"\nSubject name: {subject_name}")
     print(f"Session number: {session_number}")
     print(f"Experiment type: {session_type}")
-    confirm = input("\nAre the details ok for this session (Y - continue / N - exit)?: ")
+    confirm = input("\nAre the details ok for this session (Y (or return) - continue / N - exit)?: ")
     if confirm == "" or confirm.lower()[0] == "y":
         return True
     else:
@@ -436,12 +436,13 @@ def setup_experiment(data_dir=DATA_DIR):
     subject_name, session_number, experiment_subjects_df = set_subject_name(data_dir)
     session_type = choose_session_type()
     if not confirm_experiment_details(subject_name, session_number, session_type):
-        # TODO: Only write update to session number if confirmed
+        print("\nExiting - user terminated session...\n")
         sys.exit()
-        # Update the tracking file with the next session number for the given subject (subject_name)
     update_subjects_xlsx(data_dir, experiment_subjects_df, subjects_file="experiment_subjects.xlsx")
     log_file, measurement_file = create_output_filenames(subject_name, session_number, session_type)
     log_trial_parameters(p, data_dir, log_file)
+    comment = input("\nEnter any comments for this session: ")
+    log_event(f"Comment: {comment}", data_dir, log_file)
     log_event(f"Data directory: {data_dir}", data_dir, log_file)
     log_event(f"Log file: {log_file}", data_dir, log_file)
     log_event(f"Measurement file: {measurement_file}", data_dir, log_file)
