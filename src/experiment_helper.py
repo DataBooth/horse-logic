@@ -500,6 +500,7 @@ class Parameter:
         maximum_value (float): The maximum allowed value for the parameter.
         description (str): A description of the parameter.
     """
+
     name: str
     val: float
     unit: str
