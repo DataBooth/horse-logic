@@ -433,6 +433,17 @@ def confirm_experiment_details(subject_name, session_number, session_type):
 
 @dataclass
 class Parameter:
+    """
+    A class representing a specific parameter used in an experiment.
+
+    Attributes:
+        name (str): The name of the parameter.
+        val (float): The value of the parameter.
+        unit (str): The unit of measurement for the parameter.
+        minimum_value (float): The minimum allowed value for the parameter.
+        maximum_value (float): The maximum allowed value for the parameter.
+        description (str): A description of the parameter.
+    """
     name: str
     val: float
     unit: str
@@ -442,6 +453,17 @@ class Parameter:
 
 
 def parse_text_for_na(value):
+    """
+    Check if a value is a missing value (NaN) and return the value or an empty string.
+
+    Parameters:
+    value (any): The value to be checked for NaN.
+
+    Returns:
+    str: The original value if it is not NaN.
+         An empty string if the value is NaN.
+    """
+
     if pd.isna(value):
         return ""
     else:
@@ -449,6 +471,16 @@ def parse_text_for_na(value):
 
 
 def get_parameter(name, experiment_parameters_df):
+    """
+    Retrieves a specific parameter from a DataFrame containing experiment parameters.
+
+    Args:
+        name (str): The name of the parameter to retrieve.
+        experiment_parameters_df (DataFrame): The DataFrame containing the experiment parameters.
+
+    Returns:
+        Parameter: The parameter with the specified name, or None if the parameter does not exist in the DataFrame.
+    """
     row = experiment_parameters_df.loc[experiment_parameters_df["name"] == name]
     if row.drop(columns=["name"]).isnull().values.all():
         return None
@@ -463,12 +495,30 @@ def get_parameter(name, experiment_parameters_df):
 
 
 def load_validate_experiment_parameters(data_dir, parameters_xlsx="experiment_parameters.xlsx"):
+    """
+    Load and validate experiment parameters from an Excel file.
+
+    Args:
+        data_dir (str): The directory where the experiment data is stored.
+        parameters_xlsx (str, optional): The name of the Excel file containing the experiment parameters.
+            Defaults to "experiment_parameters.xlsx".
+
+    Raises:
+        FileNotFoundError: If the experiment parameters Excel file does not exist in the specified data directory.
+
+    Returns:
+        dict: A dictionary containing the validated parameter values.
+    """
+
     if not Path(data_dir / parameters_xlsx).exists():
         raise FileNotFoundError(f"{parameters_xlsx} does not exist")
+
     experiment_parameters_df = pd.read_excel(Path(data_dir / parameters_xlsx))
     par = {}
+
     for name in experiment_parameters_df["name"]:
         parameter = get_parameter(name, experiment_parameters_df)
+
         if parameter is not None:
             # check if parameter is numeric
             if isinstance(parameter.val, (int, float)):
@@ -477,11 +527,26 @@ def load_validate_experiment_parameters(data_dir, parameters_xlsx="experiment_pa
                 print(f"{parameter.name}: {parameter.val} {parameter.unit} - Validated")
             else:
                 print(f"{parameter.name} is not numeric: {parameter.val}")
+
             par[name] = parameter.val
+
     return par
 
 
 def setup_experiment(data_dir=DATA_DIR):
+    """
+    Initialises the necessary components and parameters for an experiment.
+
+    Args:
+        data_dir (str, optional): The directory where the experiment data will be stored.
+
+    Returns:
+        tuple: A tuple containing the subject name, session number, session type, experiment parameters, touch sensor object, servo motor object, data directory, log file name, and measurement file name.
+
+    Example:
+        subject_name, session_number, session_type, p, touchSensor, servo, data_dir, log_file, measurement_file = setup_experiment()
+
+    """
     pygame.mixer.init()  # Initialise the mixer module for playing WAV files
     data_dir = initialise_data_dir()
     p = load_validate_experiment_parameters(data_dir)
