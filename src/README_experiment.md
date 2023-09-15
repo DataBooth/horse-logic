@@ -4,19 +4,23 @@ The code is designed to be run on a Raspberry Pi using Python.
 The code should be run from the command line using the following command:
 
 ```bash
-python main.py [TODO: Fix name]
+python Final_RPE.py
 ```
 
-The code should be run for each subject (horse) for each session number of specified session type (RP-A (acquisition), RP-E (extinction), TODO add others).
+The code should be run for each subject (horse) for each session number of specified session type:
+- RP-A: acquisition,
+- RP-H: habit formation,
+- RP-E: extinction,
+- RP-R: reinstatement.
 
-
-### Code files
+### Python code
 
 The two code files are:
-- main.py (TODO: put in actual name)
+- Final_RPE.py (TODO: put in actual name)
 - experiment_helper.py
+- experiment_sounds.py
 
-The `experiment_helper.py` file contains the helper functions for the experiment code to hide the details of the experiment code from the main code.
+The `experiment_helper.py` file contains the helper functions for the experiment code to hide the details of the experiment code from the main code. `experiment_sounds.py` contains the paths for each of the sounds for the experiment.
 
 ### Data files
 
@@ -35,3 +39,24 @@ Naming convention for log files and data files is:
 `Experiment_{SESSION_START_TIMESTAMP}_{SUBJECT_NAME}_{SESSION_NUMBER}_{SESSION_TYPE}`
 
 with a `.log` (log file) or `.dat` (measurement file) extension.
+
+### Session types
+
+RP-A= acquisition of response
+trialLimit = 20 per session, multiple sessions until acquisition criterion
+unlimited time between start tone and touch (or button)
+criterion = n touches in a row that occur under 20 sec from start tone
+no responseTimeout
+
+RP-H= habit formation
+trialLimit 20 fixed trials per session, 3 sessions
+responseTimeout 45s
+
+RP-E= extinction of response
+trialLimit  = 20, multiple session until extinction criterion
+number of responses in a row
+criterion_seconds = 20s
+
+RP-R= reinstatement of response
+trialLimit = 20 per session, multiple sessions until acquisition criterion
+no responseTimeout
