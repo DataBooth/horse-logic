@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import time
 import pygame
 import sys
+import pprint
 
 try:
     from PiicoDev_CAP1203 import PiicoDev_CAP1203
@@ -16,6 +17,7 @@ except ImportError:
 
 
 DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # CH: Hard-coded example only
+
 
 def initialise_directories():
     """
@@ -50,6 +52,7 @@ class Servo_grain:
         time.sleep(0.5)
         self.servo.angle = 0
 
+
 class Button:
     def __init__(self, pin):
         self.pin = pin
@@ -58,25 +61,28 @@ class Button:
     def is_pressed(self):
         return GPIO.input(self.pin) == GPIO.LOW
 
-def initialise_GPIO_buttons():
-    # Set up GPIO pins for buttons
 
-    GPIO.setmode(GPIO.BCM)
-    butpin_green = 6  # Green button
-    butpin_blue = 7  # Blue button
-    butpin_red = 12  # Red button
+def initialise_GPIO_buttons(RPi=RPI_MODE):
+    if RPi:
+        # Set up GPIO pins for buttons
 
-    # Set up GPIO pins for input with an internal pull-up resistor
+        GPIO.setmode(GPIO.BCM)
+        butpin_green = 6  # Green button
+        butpin_blue = 7  # Blue button
+        butpin_red = 12  # Red button
 
-    GPIO.setup(butpin_green, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(butpin_blue, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(butpin_red, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        # Set up GPIO pins for input with an internal pull-up resistor
 
-    green_button = Button(butpin_green)
-    blue_button = Button(butpin_blue)
-    red_button = Button(butpin_red)
-    return GPIO, green_button, blue_button, red_button
+        GPIO.setup(butpin_green, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(butpin_blue, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(butpin_red, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
+        green_button = Button(butpin_green)
+        blue_button = Button(butpin_blue)
+        red_button = Button(butpin_red)
+        return GPIO, green_button, blue_button, red_button
+    else:
+        return None, None, None, None
 
 
 # need a description of what this is?
@@ -156,22 +162,22 @@ def initialise_servo(servo_channel):
     return servo
 
 
-def initialise_sensors(sensitivity, servo_channel, Rpi=False):
+def initialise_sensors(sensitivity, servo_channel, RPi=RPI_MODE):
     """
     Initialises the sensors based on the given parameters.
 
     Args:
         sensitivity (int, optional): The sensitivity level of the touch sensor. Default is 4.
-        Rpi (bool, optional): A boolean flag indicating whether the code is running on a Raspberry Pi. Default is False.
+        RPi (bool, optional): A boolean flag indicating whether the code is running on a Raspberry Pi. Default is False.
 
     Returns:
         tuple: A tuple containing the initialised touch sensor and servo objects.
 
     Example:
-        touch_sensor, servo = initialise_sensors(sensitivity=4, Rpi=True)
+        touch_sensor, servo = initialise_sensors(sensitivity=4, RPi=True)
 
     """
-    if Rpi:
+    if RPi:
         touch_sensor = initialise_touch_sensor(sensitivity)
         servo = initialise_servo(servo_channel)
         return touch_sensor, servo
@@ -265,10 +271,10 @@ def log_event(
 
 
 def log_trial_parameters(parameters, data_dir, log_file):
-    params = {key: eval(key) for key in parameters}
+    pformatted = pprint.pformat(parameters)
     with open(Path(data_dir) / log_file, "a") as f:
-        f.write(f"PARAMETERS: {params}\n")
-    print(f"Logged - PARAMETERS: {params}\n")
+        f.write(f"PARAMETERS:\n{pformatted}\n")
+    print(f"Logged - PARAMETERS:\n{pformatted}\n")
     return None
 
 
@@ -280,8 +286,8 @@ def set_subject_name(data_dir):
 
     while not subject_name:
         subject_name_in = input("\nEnter subject name: ")
-        subject_name, next_session_number = get_next_session_number(subject_name_in, data_dir)
-    return subject_name, next_session_number
+        subject_name, next_session_number, experiment_subjects_df = get_next_session_number(subject_name_in, data_dir)
+    return subject_name, next_session_number, experiment_subjects_df
 
 
 def get_next_session_number(subject_name, data_dir, subjects_file="experiment_subjects.xlsx"):
@@ -298,15 +304,23 @@ def get_next_session_number(subject_name, data_dir, subjects_file="experiment_su
     if subject_name.lower().replace(" ", "") not in subject_names:
         print(f"Subject {subject_name} not found in tracking file.\nSee {(Path(data_dir) / subjects_file).as_posix()}.")
         return False, 0
-    next_session_number = experiment_subjects_df[experiment_subjects_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False)]["last_session_number"].values[0] + 1
+    next_session_number = (
+        experiment_subjects_df[
+            experiment_subjects_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False)
+        ]["last_session_number"].values[0]
+        + 1
+    )
     experiment_subjects_df.loc[
         experiment_subjects_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False),
         "last_session_number",
     ] = next_session_number
-    # Update the tracking file with the next session number for the given subject (subject_name)
+    return subject_name, next_session_number, experiment_subjects_df
+
+
+def update_subjects_xlsx(data_dir, experiment_subjects_df, subjects_file):
     experiment_subjects_df.drop(columns=["subject_name_clean"], inplace=True)
     experiment_subjects_df.to_excel(Path(data_dir) / subjects_file, index=False)
-    return subject_name, next_session_number
+    return None
 
 
 def choose_session_type():
@@ -358,10 +372,10 @@ def confirm_experiment_details(subject_name, session_number, session_type):
     print(f"Session number: {session_number}")
     print(f"Experiment type: {session_type}")
     confirm = input("\nAre the details ok for this session (Y - continue / N - exit)?: ")
-    if confirm.lower()[0] != "y":
-        return False
-    else:
+    if confirm == "" or confirm.lower()[0] == "y":
         return True
+    else:
+        return False
 
 
 @dataclass
@@ -413,19 +427,23 @@ def load_validate_experiment_parameters(data_dir, parameters_xlsx="experiment_pa
             par[name] = parameter.val
     return par
 
+
 def setup_experiment(data_dir=DATA_DIR):
     pygame.mixer.init()  # Initialise the mixer module for playing WAV files
     data_dir = initialise_directories()
     p = load_validate_experiment_parameters(data_dir)
     touchSensor, servo = initialise_sensors(p["SENSITIVITY"], p["SERVO_CHANNEL"])
-    subject_name, session_number = set_subject_name(data_dir)
+    subject_name, session_number, experiment_subjects_df = set_subject_name(data_dir)
     session_type = choose_session_type()
     if not confirm_experiment_details(subject_name, session_number, session_type):
+        # TODO: Only write update to session number if confirmed
         sys.exit()
+        # Update the tracking file with the next session number for the given subject (subject_name)
+    update_subjects_xlsx(data_dir, experiment_subjects_df, subjects_file="experiment_subjects.xlsx")
     log_file, measurement_file = create_output_filenames(subject_name, session_number, session_type)
+    log_trial_parameters(p, data_dir, log_file)
     log_event(f"Data directory: {data_dir}", data_dir, log_file)
     log_event(f"Log file: {log_file}", data_dir, log_file)
     log_event(f"Measurement file: {measurement_file}", data_dir, log_file)
     log_event(f"Subject {subject_name} - Session {session_number} started...", data_dir, log_file)
-    log_trial_parameters(p, data_dir, log_file)
     return subject_name, session_number, session_type, p, touchSensor, servo, data_dir, log_file, measurement_file
