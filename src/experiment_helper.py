@@ -1,7 +1,203 @@
-from datetime import datetime as dt
+from datetime import datetime, timedelta
 from pathlib import Path
 import pandas as pd
 from dataclasses import dataclass
+import time
+import pygame
+
+try:
+    from PiicoDev_CAP1203 import PiicoDev_CAP1203
+    from PiicoDev_Servo import PiicoDev_Servo, PiicoDev_Servo_Driver
+    import RPi.GPIO as GPIO
+except ImportError:
+    RPI_MODE = False
+    print("\n**** Running in non-RPi mode for testing only ****\n")
+
+
+DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # CH: Hard-coded example only
+TONE_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/src/tones"  # CH: example only
+
+
+def initialise_directories():
+    """
+    Initialises the data and tone directories.
+
+    Returns:
+    - data_dir: The initialized data directory.
+    - tone_dir: The initialized tone directory.
+    """
+    data_dir = set_directory(DATA_DIR)
+    tone_dir = set_directory(TONE_DIR)
+    return data_dir, tone_dir
+
+
+# Define Servo objects for different types of feed. Can adjust the angles and times if needed
+class Servo_pellets:
+    def __init__(self, servo):
+        self.servo = servo
+
+    def dispense_feed_pellets(self):
+        self.servo.angle = 80
+        print(f"Feed dispensed at: {datetime.now()}")
+        time.sleep(0.5)
+        self.servo.angle = 0
+
+
+class Servo_grain:
+    def __init__(self, servo):
+        self.servo = servo
+
+    def dispense_feed_grain(self):
+        self.servo.angle = 70
+        print(f"Feed dispensed at: {datetime.now()}")
+        time.sleep(0.5)
+        self.servo.angle = 0
+
+
+def initialise_GPIO():
+    # Set up GPIO pins for buttons
+
+    GPIO.setmode(GPIO.BCM)
+    butpin_green = 6  # Green button
+    butpin_blue = 7  # Blue button
+    butpin_red = 12  # Red button
+
+    # Set up GPIO pins for input with an internal pull-up resistor
+
+    GPIO.setup(butpin_green, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(butpin_blue, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(butpin_red, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    return GPIO, butpin_green, butpin_blue, butpin_red
+
+
+class Button:
+    def __init__(self, pin):
+        self.pin = pin
+        GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+    def is_pressed(self):
+        return GPIO.input(self.pin) == GPIO.LOW
+
+
+# need a description of what this is?
+def elapsed_seconds(start_time):
+    delta_since_start = datetime.now() - start_time
+    duration_since_start = delta_since_start.total_seconds()
+    return duration_since_start
+
+
+def listenForPause(red_button, logTouches, blue_button, touchSensor, trialPausedWav, trialRestartedWav):
+    if red_button.is_pressed():
+        pauseTime = datetime.now()
+        # Process pause
+        print(f"Process paused at: {datetime.now()}, Session paused")
+        play_WAV(trialPausedWav, 1)
+        while True:
+            if red_button.is_pressed():
+                print(f"Process resumed at: {datetime.now()}, Session resumed")
+                play_WAV(trialRestartedWav, 1)
+                return timedelta(0, elapsed_seconds(pauseTime))
+    if logTouches:
+        if blue_button.is_pressed():
+            print(f"Manual touch recorded during sleep at: {datetime.now()}, Session under manual control")
+            time.sleep(0.5)
+        status = touchSensor.read()
+        if status[1] > 0 or status[2] > 0 or status[3] > 0:
+            print(f"Touch-pad status read during sleep at: {datetime.now()}")
+            time.sleep(0.5)
+    return timedelta(0, 0)
+
+
+# need a description of what this is and what it does?
+def pausable_sleep(duration_seconds, logTouches):
+    start_time = datetime.now()
+    elapsed = elapsed_seconds(start_time)
+    while elapsed < duration_seconds:
+        listenForPause(logTouches)
+        elapsed = elapsed_seconds(start_time)
+    return timedelta(0, elapsed)
+
+
+# Function to play WAV file for a specified duration
+def play_WAV(file_path, duration):
+    sound = pygame.mixer.Sound(file_path)
+    sound.play()
+    pygame.time.delay(int(duration * 1000))
+    time.sleep(duration)
+    sound.stop()
+
+
+def initialise_experiment(subject_name, initial_delay, experiment_type, data_dir, session_number):
+    """
+    Initialises the experiment by generating output filenames, and logging important information.
+
+    Args:
+        subject_number (int): The number of the subject for which the experiment is being initialised.
+        initial_delay (int, optional): The initial delay in seconds before the experiment starts. Default is 10 seconds.
+
+    Returns:
+        tuple: A tuple containing the following elements:
+            - log_file (str): The name of the log file.
+            - measurement_file (str): The name of the measurement file.
+            - initial_delay (int): The initial delay in seconds before the experiment starts.
+    """
+    log_file, measurement_file = create_output_filenames(subject_name, session_number, experiment_type)
+    log_event(f"Data directory: {data_dir}", data_dir, log_file)
+    log_event(f"Log file: {log_file}", data_dir, log_file)
+    log_event(f"Measurement file: {measurement_file}", data_dir, log_file)
+    return log_file, measurement_file, initial_delay
+
+
+def initialise_touch_sensor(sensitivity):
+    """
+    Initialises the touch sensor based on the given sensitivity level.
+
+    Args:
+        sensitivity (int): The sensitivity level of the touch sensor.
+
+    Returns:
+        PiicoDev_CAP1203: The initialised touch sensor object.
+    """
+    touch_sensor = PiicoDev_CAP1203(touchmode="single", sensitivity=sensitivity)
+    return touch_sensor
+
+
+def initialise_servo(servo_channel):
+    """
+    Initialises a servo motor.
+
+    Args:
+        servo_channel (int, optional): The channel number of the servo motor. Default is SERVO_CHANNEL.
+
+    Returns:
+        PiicoDev_Servo: The initialised servo motor object.
+    """
+    servo_driver = PiicoDev_Servo_Driver()
+    servo = PiicoDev_Servo(servo_driver, servo_channel)
+    return servo
+
+
+def initialise_sensors(sensitivity, servo_channel, Rpi=False):
+    """
+    Initialises the sensors based on the given parameters.
+
+    Args:
+        sensitivity (int, optional): The sensitivity level of the touch sensor. Default is 4.
+        Rpi (bool, optional): A boolean flag indicating whether the code is running on a Raspberry Pi. Default is False.
+
+    Returns:
+        tuple: A tuple containing the initialised touch sensor and servo objects.
+
+    Example:
+        touch_sensor, servo = initialise_sensors(sensitivity=4, Rpi=True)
+
+    """
+    if Rpi:
+        touch_sensor = initialise_touch_sensor(sensitivity)
+        servo = initialise_servo(servo_channel)
+        return touch_sensor, servo
+    else:
+        return None, None
 
 
 def set_directory(dir_name):
@@ -43,7 +239,7 @@ def create_output_filenames(subject_name, session_number, experiment_type):
         # Output: ('Experiment_2022-01-01T12:00:00_Subject_10.log', 'Experiment_2022-01-01T12:00:00_Subject_10.dat')
     """
     LOGFILE_PREFIX = "Experiment"
-    file_name = f"{LOGFILE_PREFIX}_{dt.now().isoformat()}_{subject_name}_{session_number}_{experiment_type}"
+    file_name = f"{LOGFILE_PREFIX}_{datetime.now().isoformat()}_{subject_name}_{session_number}_{experiment_type}"
     return f"{file_name}.log", f"{file_name}.dat"
 
 
@@ -77,7 +273,7 @@ def log_event(
     if not Path(data_dir).exists():
         raise FileNotFoundError(f"Data directory {data_dir} does not exist.")
     if event_time is None:
-        event_time = dt.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+        event_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
     with open(Path(data_dir) / log_file, "a") as flog:
         flog.write(f"{event_time}: {event_name}\n")
     if echo_to_console:
@@ -144,20 +340,36 @@ def get_next_session_number(subject_name, data_dir, tracking_file="experiment_tr
     return subject_name, next_session_number
 
 
-def choose_experiment_type():
-    # Allow the user to choose the experiment type by entering the number corresponding to the experiment type
-    experiment_types = ["RPE-A", "RPE-B", "Experiment 3"]
-    experiment_number = 0
-    print("\nChoose experiment type:")
-    for i, experiment_type in enumerate(experiment_types):
-        print(f"{i+1} - {experiment_type}")
-    while experiment_number < 1 or experiment_number > len(experiment_types):
+def choose_session_type():
+    """
+    Allows the user to select an session type from a predefined list.
+
+    Returns:
+        str: The selected session type.
+
+    Example Usage:
+        Choose session type:
+        1 - RPE-A
+        2 - RPE-H
+        3 - RPE-E
+        4 - RPE-R
+
+        Enter session type: 2
+
+        Output: "RPE-H"
+    """
+    session_types = ["RPE-A", "RPE-H", "RPE-E", "RPE-R"]
+    session_choice = 0
+    print("\nChoose session type:")
+    for i, session_type in enumerate(session_types):
+        print(f"{i+1} - {session_type}")
+    while session_choice < 1 or session_choice > len(session_types):
         try:
-            experiment_number = int(input("\nEnter experiment type: "))
+            session_choice = int(input("\nEnter session type: "))
         except ValueError:
-            experiment_number = 0
-    experiment_type = experiment_types[experiment_number - 1]
-    return experiment_type
+            session_choice = 0
+    session_type = session_types[session_choice - 1]
+    return session_type
 
 
 def confirm_experiment_details(subject_name, session_number, experiment_type, N_TRIAL):
@@ -223,8 +435,12 @@ def load_validate_experimental_parameters(data_dir, parameters_xlsx="experimenta
     for name in experimental_parameters_df["name"]:
         parameter = get_parameter(name, experimental_parameters_df)
         if parameter is not None:
-            if parameter.val < parameter.minimum_value or parameter.val > parameter.maximum_value:
-                print(f"{parameter.name} is out of range: {parameter.val} {parameter.unit}")
-            print(f"{parameter.name}: {parameter.val} {parameter.unit} - Validated")
+            # check if parameter is numeric
+            if isinstance(parameter.val, (int, float)):
+                if parameter.val < parameter.minimum_value or parameter.val > parameter.maximum_value:
+                    print(f"{parameter.name} is out of range: {parameter.val} {parameter.unit}")
+                print(f"{parameter.name}: {parameter.val} {parameter.unit} - Validated")
+            else:
+                print(f"{parameter.name} is not numeric: {parameter.val}")
             par[name] = parameter.val
     return par
