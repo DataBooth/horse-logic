@@ -590,21 +590,21 @@ def load_validate_experiment_parameters(data_dir, parameters_xlsx="experiment_pa
 
     experiment_parameters_df = pd.read_excel(Path(data_dir / parameters_xlsx))
     par = {}
-
     for name in experiment_parameters_df["name"]:
         parameter = get_parameter(name, experiment_parameters_df)
-
         if parameter is not None:
-            # check if parameter is numeric
-            if isinstance(parameter.val, (int, float)):
-                if parameter.val < parameter.minimum_value or parameter.val > parameter.maximum_value:
-                    print(f"{parameter.name} is out of range: {parameter.val} {parameter.unit}")
-                print(f"{parameter.name}: {parameter.val} {parameter.unit} - Validated")
+            if pd.isna(parameter.val):
+                print(f"WARNING: {parameter.name} is UNDEFINED")
+                par[name] = "-- UNDEFINED --"
             else:
-                print(f"{parameter.name} is not numeric: {parameter.val}")
-
-            par[name] = parameter.val
-
+            # check if parameter is numeric
+                if isinstance(parameter.val, (int, float)):
+                    if parameter.val < parameter.minimum_value or parameter.val > parameter.maximum_value:
+                        print(f"{parameter.name} is out of range: {parameter.val} {parameter.unit}")
+                    print(f"{parameter.name}: {parameter.val} {parameter.unit} - Validated")
+                else:
+                    print(f"{parameter.name} is not numeric: {parameter.val}")
+                par[name] = parameter.val
     return par
 
 
