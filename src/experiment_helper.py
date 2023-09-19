@@ -308,6 +308,23 @@ def log_event(
     event_time=None,
     echo_to_console=True,
 ):
+    """
+    Log an event in an experiment.
+
+    Args:
+        event_name (str): The name or description of the event to be logged.
+        data_dir (str): The directory where the log file and measurement file will be stored.
+        log_file (str): The name of the log file.
+        log_as_measurement (bool, optional): Whether to log the event as a measurement in a separate file. Default is False.
+        event_time (str, optional): The timestamp of the event. If not provided, the current timestamp will be used.
+        echo_to_console (bool, optional): Whether to print the event details to the console. Default is True.
+
+    Raises:
+        FileNotFoundError: If the data directory does not exist.
+
+    Returns:
+        None
+    """
     if not Path(data_dir).exists():
         raise FileNotFoundError(f"Data directory {data_dir} does not exist.")
     if event_time is None:
@@ -392,20 +409,21 @@ def get_next_session_number(subject_name, data_dir, subjects_file="experiment_su
     subject_names = [name.lower() for name in experiment_subjects_df["subject_name"].values.tolist()]
     # Amend to allow for subject names with spaces
     subject_names = [name.replace(" ", "") for name in subject_names]
-    if subject_name.lower().replace(" ", "") not in subject_names:
+    subject_name_clean = subject_name.lower().replace(" ", "")
+    if subject_name_clean not in subject_names:
         print(f"Subject {subject_name} not found in tracking file.\nSee {(Path(data_dir) / subjects_file).as_posix()}.")
         return False, 0, 0
     next_session_number = (
-        experiment_subjects_df[
-            experiment_subjects_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False)
-        ]["last_session_number"].values[0]
+        experiment_subjects_df[experiment_subjects_df["subject_name_clean"] == subject_name_clean][
+            "last_session_number"
+        ].values[0]
         + 1
     )
     experiment_subjects_df.loc[
-        experiment_subjects_df["subject_name_clean"].str.contains(subject_name.lower().replace(" ", ""), case=False),
+        experiment_subjects_df["subject_name_clean"] == subject_name_clean,
         "last_session_number",
     ] = next_session_number
-    return subject_name, next_session_number, experiment_subjects_df
+    return subject_name_clean, next_session_number, experiment_subjects_df
 
 
 def update_subjects_xlsx(data_dir, experiment_subjects_df, subjects_file):
@@ -617,6 +635,8 @@ def setup_experiment(data_dir=DATA_DIR):
     log_file, measurement_file = create_output_filenames(subject_name, session_number, session_type)
     log_trial_parameters(p, data_dir, log_file)
     comment = input("\nEnter any comments for this session: ")
+    if comment == "":
+        comment = "None"
     log_event(f"Comment: {comment}", data_dir, log_file)
     log_event(f"Data directory: {data_dir}", data_dir, log_file)
     log_event(f"Log file: {log_file}", data_dir, log_file)
