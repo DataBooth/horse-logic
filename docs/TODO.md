@@ -1,9 +1,0 @@
-- Draw out / walk-thru experiment on whiteboard
-- Think about the start/end of the experiment for each subject - how to make it clear to them when to start/stop
-- Work out a plan for finishing prototype of experimental setup - allow for the 3 phases and standardised logging of each event/wait & recording of latency data for analysis
-- Map out the analysis & confirm Cath (do analysis on simulated data)
-- Confirm date format for data logging
-- Remote access option a good one to check in real time that once your code is added re the data logging etc e.g. TeamViewer https://www.teamviewer.com/en/solutions/remote-desktop/raspberry-pi/
-- VNC option? Setting up a [VNC screen share on a Raspberry Pi and a Mac](https://medium.com/@thedyslexiccoder/setting-up-a-vnc-screen-share-on-a-raspberry-pi-and-a-mac-10c1635df5dc)
-- https://www.raspberrypi.com/documentation/computers/remote-access.html (see realVNC option - free for Education) c.f. Once your 14 day trial ends, your account will revert back to our Lite plan which is free for non-commercial use and is best suited to personal projects or lending a helping hand to less tech-savvy friends and family. This should already be installed on the Raspberry Pi.
-- See also videos in Signal chat
