@@ -5,6 +5,7 @@ data/*.parquet
 .~lock.*
 *.dat
 *.zip
+*.7z
 
 
 # Byte-compiled / optimized / DLL files
