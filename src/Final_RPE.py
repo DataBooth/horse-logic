@@ -61,7 +61,7 @@ def listenForPause(red_button, logTouches, blue_button, touchSensor):
 
 
 # need a description of what this is and what it does?
-def pausable_sleep(duration_seconds, logTouches):
+def pausable_sleep(duration_seconds, logTouches, red_button, blue_button, touchSensor):
     """
     Pause and resume a sleep operation.
 
@@ -75,7 +75,7 @@ def pausable_sleep(duration_seconds, logTouches):
     start_time = datetime.now()
     elapsed = elapsed_seconds(start_time)
     while elapsed < duration_seconds:
-        listenForPause(logTouches)
+        listenForPause(red_button, logTouches, blue_button, touchSensor)
         elapsed = elapsed_seconds(start_time)
     return timedelta(0, elapsed)
 
@@ -99,7 +99,7 @@ def pausable_sleep(duration_seconds, logTouches):
 trialLimit = p["TRIAL_LIMIT"]  # all session types
 criterionLimit = 3  # check for session type-may differ between session types
 criterion_seconds = 20  # max duration in seconds for either a go or no-go response depending on session type
-responseTimeout = p["RESPONSE_TIMEOUT"]  # used for RP-H only- maximum time to respond to a start tone
+responseTimeout = p["RESPONSE_TIMEOUT"]  # used for RPE-H only- maximum time to respond to a start tone
 trialSleepTime = p["TRIAL_SLEEP_TIME"]
 
 # Define mode of operation - test or live
@@ -164,20 +164,20 @@ try:
                     data_dir,
                     log_file,
                 )
-                if session_type == "RP-A":
+                if session_type == "RPE-A":
                     play_WAV(wav.acquisitionSessionStarted, p["SESSION_STARTED_SOUND_DURATION"])
-                elif session_type == "RP-H":
+                elif session_type == "RPE-H":
                     play_WAV(wav.habitSessionStarted, p["SESSION_STARTED_SOUND_DURATION"])
-                elif session_type == "RP-E":
+                elif session_type == "RPE-E":
                     play_WAV(wav.extinctionSessionStarted, p["SESSION_STARTED_SOUND_DURATION"])
-                elif session_type == "RP-R":
+                elif session_type == "RPE-R":
                     play_WAV(wav.reinstatementSessionStarted, p["SESSION_STARTED_SOUND_DURATION"])
                 else:
                     play_WAV(wav.sessionTerminated, p["SESSION_TERMINATED_SOUND_DURATION"])
-                pausable_sleep(0.5, False)
+                pausable_sleep(0.5, False, red_button, blue_button, touchSensor)
 
                 while trial_number < trialLimit:
-                    if session_type == "RP-E":
+                    if session_type == "RPE-E":
                         if criterion_count == criterionLimit:
                             play_WAV(wav.criterionAchieved, 3)
                             # print(f"Criterion reached at: {datetime.now()}")
@@ -202,14 +202,16 @@ try:
                         # print(f"Session type {session_type} - elapsed {elapsed}")
 
                         # assess timeout
-                        if session_type == "RP-H":
+                        if session_type == "RPE-H":
                             if elapsed_seconds(start_tone_time) > responseTimeout:
                                 # print(f"Habit formation incorrect response at {datetime.now()}")
                                 log_event("Habit formation incorrect response", data_dir, log_file)
                                 play_WAV(wav.incorrectTone, 1)
-                                start_tone_time = start_tone_time + pausable_sleep(1, False)
+                                start_tone_time = start_tone_time + pausable_sleep(
+                                    1, False, red_button, blue_button, touchSensor
+                                )
                                 break
-                        elif session_type == "RP-E":
+                        elif session_type == "RPE-E":
                             if elapsed_seconds(start_tone_time) > criterion_seconds:
                                 criterion_count += 1
                                 # print(f"Criterion count {criterion_count}")
@@ -224,10 +226,10 @@ try:
                                 last_touch_time = datetime.now()
                                 touch_count += 1
                                 # print(f"Manual touch recorded at: {last_touch_time}, Session under manual control")
-                                log_event("Manual touch recorded - Session under manual control")
+                                log_event("Manual touch recorded - Session under manual control", data_dir, log_file)
 
                                 # assess goal
-                                if session_type == "RP-A" or session_type == "RP-R":
+                                if session_type == "RPE-A" or session_type == "RPE-R":
                                     if elapsed_seconds(start_tone_time) < criterion_seconds:
                                         criterion_count += 1
                                         # print(f"Criterion count {criterion_count}")
@@ -236,11 +238,13 @@ try:
                                         criterion_count = 0
                                         # print("Criterion restart")
                                         log_event("Criterion restart", data_dir, log_file)
-                                elif session_type == "RP-E":
+                                elif session_type == "RPE-E":
                                     criterion_count = 0
                                     # print("Criterion restart")
                                     log_event("Criterion restart", data_dir, log_file)
-                                    start_tone_time = start_tone_time + pausable_sleep(trialSleepTime, True)
+                                    start_tone_time = start_tone_time + pausable_sleep(
+                                        trialSleepTime, True, red_button, blue_button, touchSensor
+                                    )
                                     break
 
                                 time.sleep(0.1)
@@ -265,7 +269,9 @@ try:
                                     log_event("Session ended", data_dir, log_file)
                                     sys.exit()
 
-                                start_tone_time = start_tone_time + pausable_sleep(trialSleepTime, False)
+                                start_tone_time = start_tone_time + pausable_sleep(
+                                    trialSleepTime, False, red_button, blue_button, touchSensor
+                                )
 
                             # reset the tone for another touch
                             start_tone_played = False
@@ -282,7 +288,7 @@ try:
                                 log_event("Touch-pad status read", data_dir, log_file)
                                 time.sleep(0.01)
 
-                                if session_type == "RP-A" or session_type == "RP-R":
+                                if session_type == "RPE-A" or session_type == "RPE-R":
                                     if elapsed_seconds(start_tone_time) < criterion_seconds:
                                         criterion_count += 1
                                         # print(f"Criterion count {criterion_count}")
@@ -291,11 +297,13 @@ try:
                                         criterion_count = 0
                                         # print("Criterion restart")
                                         log_event("Criterion restart", data_dir, log_file)
-                                elif session_type == "RP-E":
+                                elif session_type == "RPE-E":
                                     criterion_count = 0
                                     # print("Criterion restart")
                                     log_event("Criterion restart", data_dir, log_file)
-                                    start_tone_time = start_tone_time + pausable_sleep(trialSleepTime, True)
+                                    start_tone_time = start_tone_time + pausable_sleep(
+                                        trialSleepTime, True, red_button, blue_button, touchSensor
+                                    )
                                     break
 
                                 play_WAV(wav.correctTone, 1)
@@ -319,7 +327,9 @@ try:
                                     log_event("Session ended", data_dir, log_file)
                                     sys.exit()
 
-                                start_tone_time = start_tone_time + pausable_sleep(trialSleepTime, False)
+                                start_tone_time = start_tone_time + pausable_sleep(
+                                    trialSleepTime, False, red_button, blue_button, touchSensor
+                                )
                                 break
 
                 if trial_number == trialLimit:
