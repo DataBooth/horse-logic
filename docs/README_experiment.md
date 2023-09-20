@@ -7,6 +7,25 @@ The code should be run from the command line using the following command:
 python Final_RPE.py
 ```
 
+### Dependencies
+
+Other than the standard libraries that are included with all Python distributions, the only additional dependencies required to be installed are:
+- `pandas`
+- `openpyxl`
+which can be installed using the *package manager* in Thony or at the command line using:
+```bash
+pip install pandas
+pip install openpyxl
+```
+
+Note that pandas relies on the `numpy` package which required the following tweaks to install after installing `pandas`:
+
+```bash
+pip uninstall numpy
+sudo apt install libatlas3-base-dev
+pip install numpy==1.25.2  [need to confirm version number]
+```
+
 The code should be run for each subject (horse) for each session number of specified session type (see details below under Session types).
 
 ### Running the code
