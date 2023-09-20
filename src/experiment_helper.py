@@ -12,12 +12,13 @@ try:
     import RPi.GPIO as GPIO
     from PiicoDev_CAP1203 import PiicoDev_CAP1203
     from PiicoDev_Servo import PiicoDev_Servo, PiicoDev_Servo_Driver
+    RPI_MODE = True
 except ImportError:
     RPI_MODE = False
     print("\n**** Running in non-RPi mode for testing only ****\n")
 
 
-DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # CH: Hard-coded example only
+DATA_DIR = "/home/horselogic/Code/data"  # CH: Hard-coded example only
 
 
 def initialise_data_dir():
