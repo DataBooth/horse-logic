@@ -12,6 +12,7 @@ try:
     import RPi.GPIO as GPIO
     from PiicoDev_CAP1203 import PiicoDev_CAP1203
     from PiicoDev_Servo import PiicoDev_Servo, PiicoDev_Servo_Driver
+
     RPI_MODE = True
 except ImportError:
     RPI_MODE = False
@@ -598,7 +599,7 @@ def load_validate_experiment_parameters(data_dir, parameters_xlsx="experiment_pa
                 print(f"WARNING: {parameter.name} is UNDEFINED")
                 par[name] = "-- UNDEFINED --"
             else:
-            # check if parameter is numeric
+                # check if parameter is numeric
                 if isinstance(parameter.val, (int, float)):
                     if parameter.val < parameter.minimum_value or parameter.val > parameter.maximum_value:
                         print(f"{parameter.name} is out of range: {parameter.val} {parameter.unit}")
