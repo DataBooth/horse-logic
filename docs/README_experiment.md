@@ -66,6 +66,8 @@ experiment code from the main code. `experiment_sounds.py` contains the paths fo
 
 ### Data files
 
+#### Inputs
+
 - `data/experiment_subjects.xlsx`
 - `data/experiment_parameters.xlsx`
 
@@ -82,6 +84,15 @@ Values in the workbook should be numbers/text and **not formulas**. Any row that
 The information in the remaining columns is not used and is for reference only.
 
 All of the parameters are written at the top of the log file for each subject/session.
+
+#### Log files and quantity recording files
+
+Naming convention for log files and data files is:
+
+ `Experiment_{SESSION_START_TIMESTAMP}_{SUBJECT_NAME}_{SESSION_NUMBER}_{SESSION_TYPE}`
+
+with a `.log` (log file) or `.csv` (quantity recording file) extension.
+
 
 ### Session types
 
@@ -107,12 +118,3 @@ All of the parameters are written at the top of the log file for each subject/se
 
 - trialLimit = 20 per session, multiple sessions until acquisition criterion
 - no responseTimeout
-
-### Log files and data files
-
-Naming convention for log files and data files is:
-
- `Experiment_{SESSION_START_TIMESTAMP}_{SUBJECT_NAME}_{SESSION_NUMBER}_{SESSION_TYPE}`
-
-with a `.log` (log file) or `.dat` (measurement file) extension. The measurement file is a work in progress to work out
-if it is convenient to have a separate file for the measurements or to include them in the log file.
