@@ -3,9 +3,9 @@
 .venv/
 data/*.parquet
 .~lock.*
-*.dat
 *.zip
 *.7z
+*.csv
 
 
 # Byte-compiled / optimized / DLL files
