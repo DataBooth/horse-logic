@@ -19,7 +19,8 @@ except ImportError:
     print("\n**** Running in non-RPi mode for testing only ****\n")
 
 
-DATA_DIR = "/home/horselogic/Code/data"  # CH: Hard-coded example only
+DATA_DIR = "/home/horselogic/Code/data"
+# DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # Testing only
 
 
 def initialise_data_dir():
@@ -279,7 +280,7 @@ def set_directory(dir_name):
 
 def create_output_filenames(subject_name, session_number, session_type):
     """
-    Generate the names for the log file and measurement file based on the subject name, session number, and session type.
+    Generate the names for the log file and quantity file based on the subject name, session number, and session type.
 
     Args:
         subject_name (str): The name of the subject.
@@ -287,26 +288,25 @@ def create_output_filenames(subject_name, session_number, session_type):
         session_type (str): The type of the session.
 
     Returns:
-        tuple: A tuple containing the name of the log file and the name of the measurement file.
+        tuple: A tuple containing the name of the log file and the name of the quantity file.
 
     Example:
         subject_name = "John"
         session_number = 1
         session_type = "preliminary"
-        log_file, measurement_file = create_output_filenames(subject_name, session_number, session_type)
+        log_file, quantity_file = create_output_filenames(subject_name, session_number, session_type)
         print(log_file)  # Output: Experiment_2022-01-01T12:00:00_John_1_preliminary.log
-        print(measurement_file)  # Output: Experiment_2022-01-01T12:00:00_John_1_preliminary.dat
+        print(quantity_file)  # Output: Experiment_2022-01-01T12:00:00_John_1_preliminary.csv
     """
     LOGFILE_PREFIX = "Experiment"
     file_name = f"{LOGFILE_PREFIX}_{datetime.now().isoformat()}_{subject_name}_{session_number}_{session_type}"
-    return f"{file_name}.log", f"{file_name}.dat"
+    return f"{file_name}.log", f"{file_name}.csv"
 
 
 def log_event(
     event_name,
     data_dir,
     log_file,
-    log_as_measurement=False,
     event_time=None,
     echo_to_console=True,
 ):
@@ -315,9 +315,8 @@ def log_event(
 
     Args:
         event_name (str): The name or description of the event to be logged.
-        data_dir (str): The directory where the log file and measurement file will be stored.
+        data_dir (str): The directory where the log file and quantity file will be stored.
         log_file (str): The name of the log file.
-        log_as_measurement (bool, optional): Whether to log the event as a measurement in a separate file. Default is False.
         event_time (str, optional): The timestamp of the event. If not provided, the current timestamp will be used.
         echo_to_console (bool, optional): Whether to print the event details to the console. Default is True.
 
@@ -335,10 +334,81 @@ def log_event(
         flog.write(f"{event_time}: {event_name}\n")
     if echo_to_console:
         print(f"Logged - {event_time}: {event_name}\n")
-    if log_as_measurement:
-        measurement_file = log_file.replace(".log", ".dat")
-        with open(Path(data_dir) / measurement_file, "a") as f:
-            f.write(f"{event_time}: {event_name}\n")
+    return None
+
+
+# date_time,subject_name,session_number,session_type,trial_number,quantity_name,quantity_value
+def log_quantity(
+    quantity_name,
+    quantity_value,
+    subject_name,
+    session_number,
+    session_type,
+    trial_number,
+    data_dir,
+    quantity_file,
+    quantity_time=None,
+    echo_to_console=True,
+):
+    """
+    Logs a quantity value along with relevant information to a CSV file.
+
+    NOTE: The format/content/order of the information written in this function should
+    match the header defined in the create_log_quantity_header_file() function
+
+    Args:
+        quantity_name (str): The name of the quantity being logged.
+        quantity_value (float or int): The value of the quantity being logged.
+        subject_name (str): The name of the subject.
+        session_number (int): The number of the session.
+        session_type (str): The type of the session.
+        trial_number (int): The number of the trial.
+        data_dir (str): The directory where the data is stored.
+        quantity_file (str): The name of the quantity file.
+        quantity_time (str, optional): The time of the quantity measurement. If not provided, the current time is used.
+        echo_to_console (bool, optional): Whether to print the logged quantity to the console. Default is True.
+
+    Raises:
+        FileNotFoundError: If the data directory does not exist.
+
+    Returns:
+        None
+    """
+    if not Path(data_dir).exists():
+        raise FileNotFoundError(f"Data directory {data_dir} does not exist.")
+    if quantity_time is None:
+        quantity_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    with open(Path(data_dir) / quantity_file, "a") as fq:
+        csv_str = f"{quantity_time},{subject_name},{session_number},{session_type},{trial_number},{quantity_name},{quantity_value}\n"
+        fq.write(csv_str)
+    if echo_to_console:
+        print(f"Quantity recorded - {quantity_time}: {csv_str}")
+    return None
+
+
+def create_log_quantity_header_file(data_dir, quantity_header_file="experiment_quantity_header.csv"):
+    """
+    Creates a header file for logging experiment quantity data.
+
+    Args:
+    - data_dir (str): The directory where the experiment data will be stored.
+    - quantity_header_file (str, optional): The name of the quantity header file. Default is "experiment_quantity_header.csv".
+
+    Returns:
+    - None
+
+    This function is called during experiment_setup()
+
+    Code Analysis:
+    - Define the header string for the quantity file.
+    - Open the quantity header file in write mode.
+    - Write the header string to the file.
+    - Print the path of the created quantity header file.
+    """
+    quantity_header = "date_time,subject_name,session_number,session_type,trial_number,quantity_name,quantity_value\n"
+    with open(Path(data_dir) / quantity_header_file, "w") as fh:
+        fh.write(quantity_header)
+    print(f"Quantity header file created: {(Path(data_dir) / quantity_header_file).as_posix()}")
     return None
 
 
@@ -618,14 +688,15 @@ def setup_experiment(data_dir=DATA_DIR):
         data_dir (str, optional): The directory where the experiment data will be stored.
 
     Returns:
-        tuple: A tuple containing the subject name, session number, session type, experiment parameters, touch sensor object, servo motor object, data directory, log file name, and measurement file name.
+        tuple: A tuple containing the subject name, session number, session type, experiment parameters, touch sensor object, servo motor object, data directory, log file name, and quantity file name.
 
     Example:
-        subject_name, session_number, session_type, p, touchSensor, servo, data_dir, log_file, measurement_file = setup_experiment()
+        subject_name, session_number, session_type, p, touchSensor, servo, data_dir, log_file, quantity_file = setup_experiment()
 
     """
     pygame.mixer.init()  # Initialise the mixer module for playing WAV files
     data_dir = initialise_data_dir()
+    create_log_quantity_header_file(data_dir)
     p = load_validate_experiment_parameters(data_dir)
     touchSensor, servo = initialise_sensors(p["SENSITIVITY"], p["SERVO_CHANNEL"])
     subject_name, session_number, experiment_subjects_df = set_subject_name(data_dir)
@@ -634,7 +705,7 @@ def setup_experiment(data_dir=DATA_DIR):
         print("\nExiting - user terminated session...\n")
         sys.exit()
     update_subjects_xlsx(data_dir, experiment_subjects_df, subjects_file="experiment_subjects.xlsx")
-    log_file, measurement_file = create_output_filenames(subject_name, session_number, session_type)
+    log_file, quantity_file = create_output_filenames(subject_name, session_number, session_type)
     log_trial_parameters(p, data_dir, log_file)
     comment = input("\nEnter any comments for this session: ")
     if comment == "":
@@ -642,6 +713,6 @@ def setup_experiment(data_dir=DATA_DIR):
     log_event(f"Comment: {comment}", data_dir, log_file)
     log_event(f"Data directory: {data_dir}", data_dir, log_file)
     log_event(f"Log file: {log_file}", data_dir, log_file)
-    log_event(f"Measurement file: {measurement_file}", data_dir, log_file)
+    log_event(f"Quantity file: {quantity_file}", data_dir, log_file)
     log_event(f"Subject {subject_name} - Session {session_number} started...", data_dir, log_file)
-    return subject_name, session_number, session_type, p, touchSensor, servo, data_dir, log_file, measurement_file
+    return subject_name, session_number, session_type, p, touchSensor, servo, data_dir, log_file, quantity_file
