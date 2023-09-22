@@ -9,6 +9,7 @@ from experiment_helper import (
     elapsed_seconds,
     initialise_GPIO_buttons,
     log_event,
+    log_quantity,
     play_WAV,
     setup_experiment,
 )
@@ -91,7 +92,7 @@ def pausable_sleep(duration_seconds, logTouches, red_button, blue_button, touchS
     servo,
     data_dir,
     log_file,
-    measurement_file,
+    quantity_file,
 ) = setup_experiment()
 
 
@@ -136,6 +137,11 @@ last_blue_press_time = time.time()
 start_tone_played = False
 
 if touchSensor is None:  # MJB testing mode
+    # Test use of quantity_file
+    for trial_number in range(1, 4):
+        log_quantity(
+            "test_quantity", 1.0, subject_name, session_number, session_type, trial_number, data_dir, quantity_file
+        )
     sys.exit("Exiting test mode - not running on Raspberry Pi\n")
 
 try:
