@@ -6,13 +6,13 @@
 │   ├── experiment_parameters.xlsx
 │   └── experiment_subjects.xlsx
 ├── docs
-│   ├── dirctory_structure.md [THIS FILE]
+│   ├── directory_structure.md [THIS FILE]
 │   ├── README_data_logging.md
 │   ├── README_experiment.md
 │   └── README_experiment_types.md
-├── src
+└── src
     ├── Final_RPE.py
     ├── experiment_helper.py
-    ├── experiment_sounds.py
+    └── experiment_sounds.py
 
 ```
