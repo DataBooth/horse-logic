@@ -14,6 +14,7 @@ dependencies = [
     "beepy>=1.0.7",
     "openpyxl>=3.1.2",
     "pygame>=2.5.1",
+    "Pillow>=10.0.1",
 ]
 requires-python = ">=3.9"
 license = {text = "MIT"}
@@ -23,6 +24,8 @@ dev = [
     "notebook>=6.5.4",
     "black[jupyter]>=23.3.0",
     "pre-commit>=3.3.3",
+    "pipdeptree>=2.13.1",
+    "pip>=23.3.2",
 ]
 hardware = [
     "pigpio>=1.78",

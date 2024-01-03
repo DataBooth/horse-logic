@@ -5,7 +5,9 @@ data/*.parquet
 .~lock.*
 *.zip
 *.7z
-*.csv
+Experiment*.csv
+Experiment*.log
+__pycache__
 
 
 # Byte-compiled / optimized / DLL files
