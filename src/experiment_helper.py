@@ -19,8 +19,10 @@ except ImportError:
     print("\n**** Running in non-RPi mode for testing only ****\n")
 
 
-DATA_DIR = "/home/horselogic/Code/data"
-# DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # Testing only
+if RPI_MODE:
+    DATA_DIR = "/home/horselogic/Code/data"
+else:
+    DATA_DIR = "/Users/mjboothaus/code/github/databooth/horse-logic/data"  # Testing only
 
 
 def initialise_data_dir():
