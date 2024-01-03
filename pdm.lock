@@ -5,7 +5,7 @@
 groups = ["default", "dev", "hardware"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:68c2dea4235b186af3acdfd4503ba4bb623f897def346df003000c985f25ec15"
+content_hash = "sha256:d390add019f8a5a891dc526fb008cc2f26c9985cae38fb8d6364b7da5713161e"
 
 [[package]]
 name = "anyio"
@@ -2287,6 +2287,16 @@ summary = "A wrapper around the stdlib `tokenize` which roundtrips."
 files = [
     {file = "tokenize_rt-5.1.0-py2.py3-none-any.whl", hash = "sha256:9b7bb843e77dd6ed0be5564bfaaba200083911e0497841cd3e9235a6a9794d74"},
     {file = "tokenize_rt-5.1.0.tar.gz", hash = "sha256:08f0c2daa94c4052e53c2fcaa8e32585e6ae9bdfc800974092d031401694e002"},
+]
+
+[[package]]
+name = "toml"
+version = "0.10.2"
+requires_python = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+summary = "Python Library for Tom's Obvious, Minimal Language"
+files = [
+    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
+    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
 ]
 
 [[package]]
